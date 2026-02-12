@@ -1,6 +1,29 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 
+// ── Supabase Config ──
+const SUPABASE_URL = "https://vopnqpulwbofvbyztcta.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcG5xcHVsd2JvZnZieXp0Y3RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjM1MDEsImV4cCI6MjA4NjQzOTUwMX0.eHiT32WgGqJcO--htiAFR5gpWIgET28j2j3_ZCKmzkY";
+
+async function supabaseInsert(table, data) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify(data),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error(`Supabase insert error (${table}):`, err);
+    return false;
+  }
+}
+
 // ── Sample Stories Data ──
 const SAMPLE_STORIES = [
   {
@@ -177,6 +200,12 @@ export default function DatingTales() {
   const [reportCounts, setReportCounts] = useState({});
   const submitRef = useRef(null);
 
+  const handleSubscribe = useCallback(async () => {
+    if (!email.includes("@")) return;
+    setSubscribed(true);
+    await supabaseInsert("subscribers", { email });
+  }, [email]);
+
   const handleReport = useCallback((storyId, reason) => {
     // Hide for this user immediately
     setHiddenStories(prev => new Set([...prev, storyId]));
@@ -215,6 +244,15 @@ export default function DatingTales() {
       setStories(prev => [newStory, ...prev]);
       setSubmitResult({ type: "approved", story: newStory });
       setStoryText("");
+      // Save to database
+      await supabaseInsert("stories", {
+        original_text: storyText,
+        rewritten_text: result.rewritten,
+        title: result.title,
+        theme: result.theme,
+        author_persona: result.author,
+        status: "pending",
+      });
     }
     setSubmitting(false);
   }, [storyText, submitting]);
@@ -1121,11 +1159,11 @@ export default function DatingTales() {
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter" && email.includes("@")) setSubscribed(true); }}
+                      onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }}
                     />
                     <button
                       className="hero-email-btn"
-                      onClick={() => { if (email.includes("@")) setSubscribed(true); }}
+                      onClick={handleSubscribe}
                       disabled={!email.includes("@")}
                     >
                       Join the drop <ArrowIcon />
@@ -1268,11 +1306,11 @@ export default function DatingTales() {
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter" && email.includes("@")) setSubscribed(true); }}
+                      onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }}
                     />
                     <button
                       className="banner-cta"
-                      onClick={() => { if (email.includes("@")) setSubscribed(true); }}
+                      onClick={handleSubscribe}
                       disabled={!email.includes("@")}
                     >
                       Join the drop
@@ -1324,11 +1362,11 @@ export default function DatingTales() {
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter" && email.includes("@")) setSubscribed(true); }}
+                    onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }}
                   />
                   <button
                     className="subscribe-submit"
-                    onClick={() => { if (email.includes("@")) setSubscribed(true); }}
+                    onClick={handleSubscribe}
                     disabled={!email.includes("@")}
                   >
                     Subscribe — it's free
@@ -1505,11 +1543,11 @@ export default function DatingTales() {
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter" && email.includes("@")) setSubscribed(true); }}
+                    onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }}
                   />
                   <button
                     className="banner-cta"
-                    onClick={() => { if (email.includes("@")) setSubscribed(true); }}
+                    onClick={handleSubscribe}
                     disabled={!email.includes("@")}
                   >
                     Join the drop
