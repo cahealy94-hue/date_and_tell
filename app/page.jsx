@@ -227,6 +227,43 @@ export default function DatingTales() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Fetch published stories from Supabase
+  useEffect(() => {
+    async function fetchPublished() {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/stories?status=eq.published&order=published_at.desc`,
+          {
+            headers: {
+              apikey: SUPABASE_ANON_KEY,
+              Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            },
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data.length > 0) {
+            const dbStories = data.map(s => ({
+              id: s.id,
+              title: s.title,
+              theme: s.theme,
+              author: s.author_persona,
+              trending: false,
+              text: s.rewritten_text,
+              likes: s.likes || 0,
+              publishedAt: s.published_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+              reactions: {},
+            }));
+            setStories(dbStories);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch stories:", err);
+      }
+    }
+    fetchPublished();
+  }, []);
+
   const handleSubmitStory = useCallback(async () => {
     if (!storyText.trim() || submitting) return;
     setSubmitting(true);
@@ -274,7 +311,9 @@ export default function DatingTales() {
     return matchesTheme && matchesSearch;
   });
 
-  const thisWeekStories = stories.filter(s => s.publishedAt === "2026-02-07" && !hiddenStories.has(s.id));
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const thisWeekStories = stories.filter(s => s.publishedAt >= weekAgo && !hiddenStories.has(s.id));
   const navShadow = scrollY > 10;
 
   // ── Styles ──
@@ -1252,7 +1291,7 @@ export default function DatingTales() {
             <div className="section-header">
               <div>
                 <h2>This week's drop</h2>
-                <p className="section-sub">Fresh stories from the dating trenches — Feb 7, 2026</p>
+                <p className="section-sub">Fresh stories from the dating trenches</p>
               </div>
               <button className="view-all" onClick={() => setPage("library")}>
                 View all stories <ArrowIcon />
@@ -1475,7 +1514,7 @@ export default function DatingTales() {
             <div className="library-section">
               <div className="library-section-header">
                 <h2>This week's drop</h2>
-                <span className="section-date">Feb 7, 2026</span>
+                <span className="section-date">Latest</span>
               </div>
               <div className="stories-grid">
                 {thisWeekStories.map((story, i) => (
