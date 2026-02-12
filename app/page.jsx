@@ -1131,9 +1131,9 @@ export default function DatingTales() {
       .hamburger { display: block; }
       .hero h1 { font-size: 36px; }
       .hero { padding: 48px 24px 40px; grid-template-columns: 1fr; gap: 32px; }
-      .hero-illustration { display: none; }
+      .hero-illustration { order: 1; margin-top: 24px; }
       .hero-illustration-inner { max-width: 340px; margin: 0 auto; }
-      .hero-content { text-align: left; }
+      .hero-content { text-align: left; order: 0; }
       .hero-email-form { padding: 4px 4px 4px 16px; }
       .hero-email-btn { padding: 10px 16px; font-size: 13px; }
       .hero-social-proof { flex-direction: column; gap: 6px; }
@@ -1192,7 +1192,7 @@ export default function DatingTales() {
                 ) : (
                   <div className="hero-email-form">
                     <input
-                      placeholder="your@email.com"
+                      placeholder="name@email.com"
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
@@ -1339,7 +1339,7 @@ export default function DatingTales() {
                   <>
                     <input
                       className="banner-email-input"
-                      placeholder="your@email.com"
+                      placeholder="name@email.com"
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
@@ -1395,7 +1395,7 @@ export default function DatingTales() {
                 <div className="subscribe-form animate-in delay-3">
                   <input
                     className="subscribe-input"
-                    placeholder="your@email.com"
+                    placeholder="name@email.com"
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -1576,7 +1576,7 @@ export default function DatingTales() {
                 <>
                   <input
                     className="banner-email-input"
-                    placeholder="your@email.com"
+                    placeholder="name@email.com"
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
