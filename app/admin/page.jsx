@@ -204,6 +204,12 @@ export default function AdminPage() {
       font-family: inherit; transition: all 0.2s;
     }
     .btn-cancel:hover { background: #F5F5F0; }
+    .reports-list { margin: 12px 0; padding: 12px; background: #FFF5F5; border-radius: 8px; border: 1px solid #FED7D7; }
+    .reports-list-title { font-size: 12px; font-weight: 700; color: #C53030; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .report-item { font-size: 13px; color: #2C2C2C; padding: 6px 0; border-bottom: 1px solid #FED7D7; display: flex; justify-content: space-between; }
+    .report-item:last-child { border-bottom: none; }
+    .report-reason { flex: 1; }
+    .report-date { font-size: 11px; color: #9A9A9A; white-space: nowrap; margin-left: 12px; }
   `;
 
   if (!authed) {
@@ -314,6 +320,17 @@ export default function AdminPage() {
                   {story.rewritten_text && (
                     <div className="rewritten">
                       <strong>AI rewritten:</strong><br />{story.rewritten_text}
+                    </div>
+                  )}
+                  {story.reports && story.reports.length > 0 && (
+                    <div className="reports-list">
+                      <div className="reports-list-title">Report reasons ({story.reports.length})</div>
+                      {story.reports.map((r, i) => (
+                        <div className="report-item" key={i}>
+                          <span className="report-reason">{r.reason}</span>
+                          <span className="report-date">{new Date(r.reported_at).toLocaleDateString()}</span>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <div className="story-actions">

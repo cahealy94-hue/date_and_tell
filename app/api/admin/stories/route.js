@@ -19,8 +19,9 @@ export async function GET(request) {
 
   let url;
   if (status === "reported") {
-    // Show published stories with at least 1 report (but not yet deleted)
     url = `${SUPABASE_URL}/rest/v1/stories?report_count=gt.0&status=eq.published&order=report_count.desc`;
+  } else if (status === "deleted") {
+    url = `${SUPABASE_URL}/rest/v1/stories?status=eq.deleted&order=submitted_at.desc`;
   } else {
     url = `${SUPABASE_URL}/rest/v1/stories?status=eq.${status}&order=submitted_at.desc`;
   }
@@ -33,8 +34,29 @@ export async function GET(request) {
     }
   );
 
-  const data = await res.json();
-  return Response.json(data);
+  const stories = await res.json();
+
+  // Fetch report reasons for reported/deleted stories
+  if ((status === "reported" || status === "deleted") && Array.isArray(stories) && stories.length > 0) {
+    const storyIds = stories.map(s => s.id);
+    const reportsRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/reports?story_id=in.(${storyIds.join(",")})&order=reported_at.desc`,
+      {
+        headers: {
+          apikey: getServiceKey(),
+          Authorization: `Bearer ${getServiceKey()}`,
+        },
+      }
+    );
+    const reports = await reportsRes.json();
+    const storiesWithReports = stories.map(s => ({
+      ...s,
+      reports: Array.isArray(reports) ? reports.filter(r => r.story_id === s.id) : [],
+    }));
+    return Response.json(storiesWithReports);
+  }
+
+  return Response.json(stories);
 }
 
 export async function PATCH(request) {
