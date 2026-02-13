@@ -203,7 +203,15 @@ export default function DatingTales() {
   const handleSubscribe = useCallback(async () => {
     if (!email.includes("@")) return;
     setSubscribed(true);
-    await supabaseInsert("subscribers", { email });
+    try {
+      await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch (err) {
+      console.error("Subscribe error:", err);
+    }
   }, [email]);
 
   const handleReport = useCallback(async (storyId, reason) => {
