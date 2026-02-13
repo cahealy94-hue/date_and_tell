@@ -1,1 +1,853 @@
-datingtales-v2.jsx
+"use client";
+import { useState, useEffect, useCallback, useRef } from "react";
+
+// ── Supabase Config ──
+const SUPABASE_URL = "https://vopnqpulwbofvbyztcta.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcG5xcHVsd2JvZnZieXp0Y3RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjM1MDEsImV4cCI6MjA4NjQzOTUwMX0.eHiT32WgGqJcO--htiAFR5gpWIgET28j2j3_ZCKmzkY";
+
+// ── Icons ──
+const Arrow = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
+const CheckIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+const FlagIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>;
+
+// ── Fallback Stories ──
+const SAMPLE_STORIES = [
+  { id: 1, title: "The Great Spaghetti Incident", theme: "First Dates", author: "Pasta Enthusiast", text: "Ordered spaghetti on a first date to seem 'cultured.' Twirled too aggressively. Sauce on my forehead, noodle on my chin. He said 'you've got a little something' and gestured at my entire face. We've been together two years now.", publishedAt: "2026-02-07", reactions: { "😂": 89, "❤️": 45, "😬": 23 } },
+  { id: 2, title: "Autocorrect Strikes Again", theme: "Dating App Disasters", author: "Typo Queen", text: "Tried to text my date 'I'm on my way, can't wait!' Autocorrect changed it to 'I'm on my way, can't walk!' He showed up with a wheelchair he borrowed from his grandma.", publishedAt: "2026-02-07", reactions: { "😂": 112, "❤️": 18, "😬": 67 } },
+  { id: 3, title: "The Dog Park Meet-Cute", theme: "Meet Cutes", author: "Golden Retriever Parent", text: "My dog ran full speed into a stranger at the park, knocked his coffee everywhere. I ran over apologizing. He looked at my dog, looked at me, and said 'worth it.' We now share custody of three dogs.", publishedAt: "2026-02-07", reactions: { "❤️": 95, "😂": 34, "✨": 41 } },
+  { id: 4, title: "Mom's Interrogation Protocol", theme: "Meeting the Family", author: "Nervous Wreck", text: "Brought my date to meet my mom. Within five minutes she'd pulled out my baby photos, asked about his credit score, and offered him my grandmother's ring.", publishedAt: "2026-02-07", reactions: { "😂": 72, "😬": 44, "❤️": 12 } },
+  { id: 5, title: "The Label Conversation", theme: "Situationships", author: "Hopeless Romantic", text: "After four months of 'hanging out' I finally asked where we stood. He said 'I really like what we have.' I said 'what do we have?' He said 'this conversation is a great example.'", publishedAt: "2026-01-31", reactions: { "😂": 134, "😬": 89, "💀": 67 } },
+  { id: 6, title: "Wrong Table, Right Person", theme: "Awkward Moments", author: "Latte Lover", text: "Showed up to a blind date at a coffee shop. Sat down across from someone, chatted for ten minutes. Turns out it wasn't my date — just a very friendly stranger. My actual date watched the whole thing from two tables over.", publishedAt: "2026-01-31", reactions: { "❤️": 88, "😂": 56, "✨": 73 } },
+  { id: 7, title: "The Zoom Background Betrayal", theme: "Dating App Disasters", author: "Remote Worker", text: "Had a video date. Used a fancy apartment as my virtual background. Cat jumped on my desk and knocked my laptop, revealing my actual studio apartment with laundry everywhere.", publishedAt: "2026-01-31", reactions: { "😂": 78, "❤️": 22, "😬": 31 } },
+  { id: 8, title: "Uber Driver Played Cupid", theme: "Meet Cutes", author: "Backseat Romantic", text: "Shared a pool ride with a stranger. Driver kept 'accidentally' taking wrong turns to extend the trip. We talked for forty minutes. As we got out, the driver handed us both a receipt that said 'you're welcome.'", publishedAt: "2026-01-31", reactions: { "❤️": 121, "✨": 56, "😂": 43 } },
+];
+
+const THEMES = ["First Dates", "Meet Cutes", "Dating App Disasters", "Awkward Moments", "Meeting the Family", "Situationships"];
+const EMOJI_OPTIONS = ["😂", "❤️", "😬", "✨", "💀"];
+const REPORT_REASONS = ["Inappropriate or explicit content", "Hate speech or discrimination", "Contains personal information", "Harassment or bullying", "Spam or fake story"];
+
+// ── Story Card Component ──
+function StoryCard({ story, onReaction, onReport, reacted }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportStep, setReportStep] = useState(null);
+  const [selectedReason, setSelectedReason] = useState(null);
+  const [pendingReport, setPendingReport] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
+  const handleSubmitReport = () => { if (!selectedReason) return; setPendingReport(true); setReportStep("done"); };
+  const handleCloseReport = () => { setReportStep(null); if (pendingReport) { onReport(story.id, selectedReason); } setSelectedReason(null); setPendingReport(false); };
+
+  const themeClass = `theme-${story.theme.toLowerCase().replace(/ /g, "-")}`;
+
+  return (
+    <>
+      <div className="story-card">
+        <div className="story-card-header">
+          <div className="story-card-title">{story.title}</div>
+          <div className="story-menu-wrap" ref={menuRef}>
+            <button className="story-card-dots" onClick={() => setMenuOpen(!menuOpen)}>···</button>
+            {menuOpen && (
+              <div className="story-menu-dropdown">
+                <button className="story-menu-item" onClick={() => { setMenuOpen(false); setReportStep("select"); }}>
+                  <FlagIcon /> Report Story
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        <span className={`story-card-theme ${themeClass}`}>{story.theme}</span>
+        <div className="story-card-text">{story.text}</div>
+        <div className="story-card-persona">— {story.author}</div>
+        <div className="story-card-divider" />
+        <div className="story-card-reactions">
+          {EMOJI_OPTIONS.map(emoji => {
+            const count = story.reactions?.[emoji] || 0;
+            const isActive = reacted[`${story.id}-${emoji}`];
+            return (
+              <button key={emoji} className={`story-reaction ${isActive ? "active" : ""}`} onClick={() => onReaction(story.id, emoji)}>
+                {emoji}{count > 0 && <span className="reaction-count">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {reportStep && (
+        <div className="report-overlay" onClick={(e) => { if (e.target === e.currentTarget) { if (reportStep === "done") handleCloseReport(); else { setReportStep(null); setSelectedReason(null); } } }}>
+          <div className="report-modal">
+            {reportStep === "select" ? (
+              <>
+                <h3>Report this story</h3>
+                <p className="report-sub">Help us keep DatingTales safe. Why are you reporting this?</p>
+                <div className="report-options">
+                  {REPORT_REASONS.map(reason => (
+                    <button key={reason} className={`report-option ${selectedReason === reason ? "selected" : ""}`} onClick={() => setSelectedReason(reason)}>
+                      <span className="ro-radio" />{reason}
+                    </button>
+                  ))}
+                </div>
+                <div className="report-actions">
+                  <button className="report-cancel" onClick={() => { setReportStep(null); setSelectedReason(null); }}>Cancel</button>
+                  <button className="report-submit" onClick={handleSubmitReport} disabled={!selectedReason}>Submit report</button>
+                </div>
+              </>
+            ) : (
+              <div className="report-success">
+                <div className="report-success-icon"><CheckIcon /></div>
+                <h3>Thanks for letting us know</h3>
+                <p>We've received your report and will review this story. It's been removed from your feed.</p>
+                <button className="report-cancel" style={{ marginTop: 20, width: "100%" }} onClick={handleCloseReport}>Close</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Main App ──
+export default function DatingTalesV2() {
+  const getPageFromPath = () => {
+    const path = window.location.pathname.replace(/^\//, "");
+    if (["library", "submit", "subscribe"].includes(path)) return path;
+    return "home";
+  };
+
+  const [email, setEmail] = useState("");
+  const [sub, setSub] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [storyText, setStoryText] = useState("");
+  const [page, setPageState] = useState("home");
+  const [filter, setFilter] = useState("All");
+  const [stories, setStories] = useState(SAMPLE_STORIES);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState(null);
+  const [storyReactions, setStoryReactions] = useState({});
+  const [hiddenStories, setHiddenStories] = useState(new Set());
+
+  const setPage = (p) => {
+    setPageState(p);
+    const url = p === "home" ? "/" : `/${p}`;
+    window.history.pushState({}, "", url);
+    window.scrollTo(0, 0);
+  };
+
+  useEffect(() => {
+    setLoaded(true);
+    setPageState(getPageFromPath());
+    const onPop = () => setPageState(getPageFromPath());
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // Fetch published stories from Supabase
+  useEffect(() => {
+    async function fetchPublished() {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/stories?status=eq.published&order=published_at.desc`,
+          { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data.length > 0) {
+            const dbStories = data.map(s => ({
+              id: s.id, title: s.title, theme: s.theme, author: s.author_persona,
+              text: s.rewritten_text,
+              publishedAt: s.published_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+              reactions: {},
+            }));
+            setStories(dbStories);
+          }
+        }
+      } catch (err) { console.error("Failed to fetch stories:", err); }
+    }
+    fetchPublished();
+  }, []);
+
+  // ── Handlers ──
+  const handleSubscribe = useCallback(async () => {
+    if (!email.includes("@")) return;
+    setSub(true);
+    try {
+      await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch (err) { console.error("Subscribe error:", err); }
+  }, [email]);
+
+  const handleSubmitStory = useCallback(async () => {
+    if (!storyText.trim() || submitting) return;
+    setSubmitting(true);
+    setSubmitResult(null);
+    try {
+      const res = await fetch("/api/moderate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storyText }),
+      });
+      const result = await res.json();
+      if (result.status === "rejected") {
+        setSubmitResult({ type: "rejected", message: result.reason || "We couldn't publish this one — but we'd love a lighter version!" });
+      } else {
+        setSubmitResult({ type: "approved", story: { title: result.title, theme: result.theme, author: result.author, text: result.rewritten } });
+        setStoryText("");
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      setSubmitResult({ type: "rejected", message: "Something went wrong. Please try again!" });
+    }
+    setSubmitting(false);
+  }, [storyText, submitting]);
+
+  const handleReaction = useCallback((storyId, emoji) => {
+    const key = `${storyId}-${emoji}`;
+    if (storyReactions[key]) return;
+    setStoryReactions(prev => ({ ...prev, [key]: true }));
+    setStories(prev => prev.map(s => {
+      if (s.id !== storyId) return s;
+      const reactions = { ...s.reactions };
+      reactions[emoji] = (reactions[emoji] || 0) + 1;
+      return { ...s, reactions };
+    }));
+  }, [storyReactions]);
+
+  const handleReport = useCallback(async (storyId, reason) => {
+    setHiddenStories(prev => new Set([...prev, storyId]));
+    try {
+      const res = await fetch("/api/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storyId, reason }),
+      });
+      const data = await res.json();
+      if (data.deleted) setStories(s => s.filter(story => story.id !== storyId));
+    } catch (err) { console.error("Report error:", err); }
+  }, []);
+
+  // ── Computed ──
+  const visibleStories = stories.filter(s => !hiddenStories.has(s.id));
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const thisWeekStories = visibleStories.filter(s => s.publishedAt >= weekAgo);
+  const olderStories = visibleStories.filter(s => s.publishedAt < weekAgo);
+  const homeStories = thisWeekStories.slice(0, 4);
+
+  const filteredThisWeek = filter === "All" ? thisWeekStories : thisWeekStories.filter(s => s.theme === filter);
+  const filteredOlder = filter === "All" ? olderStories : olderStories.filter(s => s.theme === filter);
+  const allThemes = ["All", ...THEMES];
+
+  const css = `
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+    :root {
+      --blue: #2563EB;
+      --blue-light: #DBEAFE;
+      --blue-pale: #EFF6FF;
+      --blue-dark: #1E40AF;
+      --blue-deep: #1E3A5F;
+      --black: #0F172A;
+      --gray: #64748B;
+      --gray-light: #94A3B8;
+      --border: #E2E8F0;
+      --bg: #FFFFFF;
+      --font: 'DM Sans', system-ui, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--black); }
+
+    .fade-up { opacity: 0; transform: translateY(16px); animation: fadeUp 0.6s ease forwards; }
+    .d1 { animation-delay: 0.08s; } .d2 { animation-delay: 0.16s; }
+    .d3 { animation-delay: 0.24s; } .d4 { animation-delay: 0.32s; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    @keyframes float1 { 0%,100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(-3deg) translateY(-8px); } }
+    @keyframes float2 { 0%,100% { transform: rotate(2.5deg) translateY(0); } 50% { transform: rotate(2.5deg) translateY(-10px); } }
+    @keyframes float3 { 0%,100% { transform: rotate(-1.5deg) translateY(0); } 50% { transform: rotate(-1.5deg) translateY(-6px); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Nav ── */
+    .nav-wrapper {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.9); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(226,232,240,0.5);
+    }
+    .nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 48px; max-width: 1280px; margin: 0 auto;
+    }
+    .nav-logo {
+      font-family: var(--font); font-size: 22px; font-weight: 700;
+      color: var(--black); letter-spacing: -0.02em;
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .nav-logo svg { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-link {
+      font-family: var(--font); font-size: 14px; font-weight: 500;
+      color: var(--gray); cursor: pointer; text-decoration: none; transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--black); }
+    .nav-share {
+      font-family: var(--font); font-size: 14px; font-weight: 600;
+      color: white; background: var(--black); padding: 12px 24px;
+      border-radius: 14px; border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-share:hover { background: #1E293B; }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 1280px; margin: 0 auto; padding: 80px 48px 100px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font); font-size: 13px; font-weight: 600;
+      color: var(--blue); margin-bottom: 20px; letter-spacing: 0.01em;
+      background: var(--blue-pale); padding: 10px 20px; border-radius: 100px;
+    }
+    .eyebrow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+    .hero h1 {
+      font-family: var(--font); font-size: 60px; font-weight: 700;
+      line-height: 1.05; letter-spacing: -0.03em; color: var(--black); margin-bottom: 24px;
+    }
+    .hero h1 em { color: var(--blue); font-style: italic; }
+    .hero-sub {
+      font-family: var(--font); font-size: 18px; color: var(--gray);
+      line-height: 1.6; margin-bottom: 36px; font-weight: 400; max-width: 460px;
+    }
+    .hero-email { display: flex; gap: 10px; margin-bottom: 20px; }
+    .hero-input {
+      flex: 1; padding: 16px 20px; border: 2px solid var(--border);
+      border-radius: 14px; font-size: 15px; font-family: var(--font);
+      background: white; color: var(--black);
+    }
+    .hero-input::placeholder { color: var(--gray-light); }
+    .hero-input:focus { outline: none; border-color: var(--blue); }
+    .hero-btn {
+      padding: 16px 32px; background: var(--blue); color: white;
+      border: none; border-radius: 14px; font-size: 15px; font-weight: 600;
+      cursor: pointer; font-family: var(--font); white-space: nowrap;
+      display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+    }
+    .hero-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+    .hero-subbed {
+      display: flex; align-items: center; gap: 10px; padding: 16px 24px;
+      background: var(--blue-pale); border-radius: 14px; font-size: 15px;
+      font-weight: 600; color: var(--blue-dark); font-family: var(--font);
+    }
+
+    /* ── Floating cards ── */
+    .hero-cards { position: relative; height: 520px; }
+    .float-card {
+      position: absolute; background: white; border-radius: 20px; padding: 22px; width: 280px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .float-card.c1 { top: 0; left: 10px; animation: float1 4s ease-in-out infinite; z-index: 2; }
+    .float-card.c2 { top: 180px; right: 0; animation: float2 5s ease-in-out infinite; z-index: 3; }
+    .float-card.c3 { bottom: 10px; left: 40px; animation: float3 4.5s ease-in-out infinite; z-index: 1; }
+    .fc-tag {
+      display: inline-block; font-family: var(--font); font-size: 11px; font-weight: 700;
+      padding: 5px 12px; border-radius: 100px; margin-bottom: 12px;
+    }
+    .c1 .fc-tag { background: var(--blue-light); color: var(--blue-dark); }
+    .c2 .fc-tag { background: #DCFCE7; color: #166534; }
+    .c3 .fc-tag { background: #F3E8FF; color: #7C3AED; }
+    .fc-title { font-family: var(--font); font-size: 16px; font-weight: 700; color: var(--black); margin-bottom: 8px; }
+    .fc-text { font-family: var(--font); font-size: 13px; color: var(--gray); line-height: 1.55; margin-bottom: 12px; }
+    .fc-reactions { display: flex; gap: 12px; font-family: var(--font); font-size: 12px; color: var(--gray-light); font-weight: 500; }
+
+    /* ── Stories ── */
+    .stories-section { max-width: 1280px; margin: 0 auto; padding: 0 48px 100px; }
+    .stories-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 36px; }
+    .stories-title { font-family: var(--font); font-size: 36px; font-weight: 700; letter-spacing: -0.02em; color: var(--black); }
+    .rainbow-accent { height: 4px; width: 60px; border-radius: 4px; margin-top: 10px; background: linear-gradient(90deg, #EF4444, #F59E0B, #3B82F6, #8B5CF6, #EC4899); }
+    .stories-link {
+      font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--black);
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+    .stories-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+    /* ── Story Card ── */
+    .story-card {
+      background: white; border-radius: 20px; padding: 28px;
+      transition: all 0.3s; border: 1px solid var(--border);
+    }
+    .story-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.06); border-color: transparent; }
+    .story-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .story-card-title { font-family: var(--font); font-size: 20px; font-weight: 700; color: var(--black); line-height: 1.25; }
+    .story-card-dots {
+      color: var(--gray-light); font-size: 18px; cursor: pointer; background: none;
+      border: none; padding: 4px 8px; border-radius: 8px; font-family: var(--font);
+    }
+    .story-card-dots:hover { background: var(--blue-pale); }
+    .story-menu-wrap { position: relative; }
+    .story-menu-dropdown {
+      position: absolute; top: 100%; right: 0; background: white; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1); border: 1px solid var(--border);
+      padding: 4px; min-width: 180px; z-index: 50;
+    }
+    .story-menu-item {
+      display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px;
+      border: none; background: none; font-family: var(--font); font-size: 13px;
+      color: var(--gray); cursor: pointer; border-radius: 8px; transition: background 0.1s;
+    }
+    .story-menu-item:hover { background: #FEF2F2; color: #DC2626; }
+    .story-card-theme {
+      display: inline-block; font-family: var(--font); font-size: 11px; font-weight: 700;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .theme-first-dates { background: #DCFCE7; color: #166534; }
+    .theme-meet-cutes { background: #FEF3C7; color: #92400E; }
+    .theme-awkward-moments { background: #F3E8FF; color: #7C3AED; }
+    .theme-dating-app-disasters { background: #FFE4E6; color: #BE123C; }
+    .theme-situationships { background: #E0F2FE; color: #0369A1; }
+    .theme-meeting-the-family { background: #FFF7ED; color: #C2410C; }
+    .story-card-text { font-family: var(--font); font-size: 15px; color: var(--gray); line-height: 1.65; margin-bottom: 16px; }
+    .story-card-persona { font-family: var(--font); font-size: 14px; font-weight: 600; font-style: italic; color: var(--blue); margin-bottom: 16px; }
+    .story-card-divider { height: 1px; background: var(--border); margin-bottom: 16px; }
+    .story-card-reactions { display: flex; gap: 8px; }
+    .story-reaction {
+      min-width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border);
+      background: white; display: flex; align-items: center; justify-content: center; gap: 4px;
+      font-size: 18px; cursor: pointer; transition: all 0.2s; padding: 0 10px;
+    }
+    .story-reaction:hover { background: var(--blue-pale); border-color: var(--blue-light); transform: scale(1.05); }
+    .story-reaction.active { background: var(--blue-pale); border-color: var(--blue); }
+    .reaction-count { font-size: 12px; font-weight: 600; color: var(--gray); font-family: var(--font); }
+
+    /* ── Report Modal ── */
+    .report-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+      z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .report-modal {
+      background: white; border-radius: 20px; padding: 32px; max-width: 440px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15); font-family: var(--font);
+    }
+    .report-modal h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--black); }
+    .report-sub { font-size: 14px; color: var(--gray); margin-bottom: 20px; }
+    .report-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .report-option {
+      display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: white; cursor: pointer;
+      font-family: var(--font); font-size: 14px; color: var(--black); transition: all 0.15s;
+    }
+    .report-option:hover { border-color: var(--blue-light); }
+    .report-option.selected { border-color: var(--blue); background: var(--blue-pale); }
+    .ro-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; }
+    .report-option.selected .ro-radio { border-color: var(--blue); background: var(--blue); box-shadow: inset 0 0 0 3px white; }
+    .report-actions { display: flex; gap: 10px; }
+    .report-cancel {
+      flex: 1; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border);
+      background: white; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--gray); cursor: pointer;
+    }
+    .report-submit {
+      flex: 1; padding: 14px; border-radius: 12px; border: none;
+      background: #EF4444; color: white; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .report-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+    .report-success { text-align: center; }
+    .report-success-icon {
+      width: 48px; height: 48px; border-radius: 50%; background: #DCFCE7;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #166534;
+    }
+
+    /* ── Submit Section (homepage) ── */
+    .submit-section { max-width: 1280px; margin: 0 auto; padding: 0 48px 100px; }
+    .submit-inner {
+      background: var(--blue-pale); border-radius: 24px; padding: 48px;
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; align-items: start;
+    }
+    .submit-title { font-family: var(--font); font-size: 32px; font-weight: 700; color: var(--black); letter-spacing: -0.02em; margin-bottom: 12px; }
+    .submit-sub { font-family: var(--font); font-size: 15px; color: var(--gray); line-height: 1.6; }
+    .submit-form-area { position: relative; }
+    .submit-textarea {
+      width: 100%; padding: 18px; padding-bottom: 36px; border: 2px solid var(--border);
+      border-radius: 14px; font-size: 15px; font-family: var(--font);
+      background: white; color: var(--black); resize: none; line-height: 1.5; min-height: 140px;
+    }
+    .submit-char-count { position: absolute; bottom: 14px; right: 16px; font-family: var(--font); font-size: 12px; color: var(--gray-light); }
+    .submit-char-count.warn { color: #F59E0B; }
+    .submit-char-count.over { color: #EF4444; }
+    .submit-textarea::placeholder { color: var(--gray-light); }
+    .submit-textarea:focus { outline: none; border-color: var(--blue); }
+    .submit-row { display: flex; justify-content: flex-end; align-items: center; margin-top: 12px; }
+    .submit-btn {
+      padding: 14px 28px; background: var(--black); color: white; border: none; border-radius: 14px;
+      font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font);
+      display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+    }
+    .submit-btn:hover { background: #1E293B; }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .submit-result { margin-top: 16px; padding: 16px; border-radius: 12px; font-family: var(--font); font-size: 14px; line-height: 1.5; }
+    .submit-result.approved { background: #DCFCE7; color: #166534; }
+    .submit-result.rejected { background: #FEF2F2; color: #991B1B; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+
+    /* ── How it works ── */
+    .how-section { background: var(--blue); padding: 80px 48px; }
+    .how-inner { max-width: 1280px; margin: 0 auto; }
+    .how-title { font-family: var(--font); font-size: 36px; font-weight: 700; color: white; letter-spacing: -0.02em; margin-bottom: 48px; }
+    .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .how-card { background: rgba(255,255,255,0.12); border-radius: 24px; padding: 36px 28px; }
+    .how-num { font-family: var(--font); font-size: 44px; font-weight: 700; color: rgba(255,255,255,0.2); margin-bottom: 16px; line-height: 1; }
+    .how-card h3 { font-family: var(--font); font-size: 18px; font-weight: 700; color: white; margin-bottom: 10px; }
+    .how-card p { font-family: var(--font); font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.6; }
+
+    /* ── CTA ── */
+    .cta-section { max-width: 1280px; margin: 0 auto; padding: 100px 48px; text-align: center; }
+    .cta-title { font-family: var(--font); font-size: 44px; font-weight: 700; letter-spacing: -0.03em; color: var(--black); margin-bottom: 16px; }
+    .cta-sub { font-family: var(--font); font-size: 17px; color: var(--gray); margin-bottom: 36px; }
+    .cta-email { display: inline-flex; gap: 10px; max-width: 480px; width: 100%; }
+    .cta-input { flex: 1; padding: 16px 20px; border: 2px solid var(--border); border-radius: 14px; font-size: 15px; font-family: var(--font); color: var(--black); }
+    .cta-input::placeholder { color: var(--gray-light); }
+    .cta-input:focus { outline: none; border-color: var(--blue); }
+    .cta-btn { padding: 16px 32px; background: var(--blue); color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .cta-btn:hover { background: var(--blue-dark); }
+
+    /* ── Library ── */
+    .library-page { max-width: 1280px; margin: 0 auto; padding: 60px 48px 100px; }
+    .library-header { margin-bottom: 40px; }
+    .library-title { font-family: var(--font); font-size: 44px; font-weight: 700; color: var(--black); letter-spacing: -0.03em; margin-bottom: 12px; }
+    .library-sub { font-family: var(--font); font-size: 17px; color: var(--gray); }
+    .library-section-title { font-family: var(--font); font-size: 24px; font-weight: 700; color: var(--black); margin-bottom: 20px; }
+    .library-divider { height: 1px; background: var(--border); margin: 48px 0; }
+    .library-filters { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .library-filter {
+      font-family: var(--font); font-size: 13px; font-weight: 600; padding: 8px 18px;
+      border-radius: 100px; border: 1.5px solid var(--border); background: white;
+      color: var(--gray); cursor: pointer; transition: all 0.2s;
+    }
+    .library-filter:hover { border-color: var(--blue-light); color: var(--black); }
+    .library-filter.active { background: var(--blue); color: white; border-color: var(--blue); }
+    .library-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .library-empty { grid-column: 1 / -1; text-align: center; padding: 48px; font-family: var(--font); font-size: 15px; color: var(--gray-light); }
+
+    /* ── Subscribe Page ── */
+    .subscribe-page { max-width: 520px; margin: 0 auto; padding: 80px 24px; text-align: center; }
+    .subscribe-heart { width: 72px; height: 72px; border-radius: 50%; background: var(--blue-pale); display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; }
+    .subscribe-page h1 { font-family: var(--font); font-size: 40px; font-weight: 700; letter-spacing: -0.03em; color: var(--black); margin-bottom: 16px; }
+    .subscribe-page h1 em { color: var(--blue); font-style: italic; }
+    .subscribe-page-sub { font-family: var(--font); font-size: 17px; color: var(--gray); line-height: 1.6; margin-bottom: 32px; }
+    .subscribe-page-input { width: 100%; padding: 18px 20px; border: 2px solid var(--border); border-radius: 14px; font-size: 16px; font-family: var(--font); color: var(--black); margin-bottom: 12px; }
+    .subscribe-page-input::placeholder { color: var(--gray-light); }
+    .subscribe-page-input:focus { outline: none; border-color: var(--blue); }
+    .subscribe-page-btn { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: var(--font); margin-bottom: 16px; }
+    .subscribe-page-btn:hover { background: var(--blue-dark); }
+    .subscribe-page-fine { font-family: var(--font); font-size: 13px; color: var(--gray-light); }
+
+    /* ── Submit Page ── */
+    .submit-page { max-width: 560px; margin: 0 auto; padding: 60px 24px; }
+    .submit-page-rainbow { height: 5px; border-radius: 14px 14px 0 0; background: linear-gradient(90deg, #EF4444, #F59E0B, #3B82F6, #8B5CF6, #EC4899); }
+    .submit-page-card { background: white; border-radius: 0 0 20px 20px; padding: 48px 36px; border: 1px solid var(--border); border-top: none; box-shadow: 0 8px 30px rgba(0,0,0,0.04); }
+    .submit-page h1 { font-family: var(--font); font-size: 36px; font-weight: 700; letter-spacing: -0.03em; color: var(--black); margin-bottom: 8px; }
+    .submit-page-sub { font-family: var(--font); font-size: 15px; color: var(--gray); margin-bottom: 28px; line-height: 1.5; }
+    .submit-page-form { position: relative; margin-bottom: 12px; }
+    .submit-page-textarea {
+      width: 100%; padding: 18px; padding-bottom: 36px; border: 2px solid var(--border);
+      border-radius: 14px; font-size: 15px; font-family: var(--font);
+      background: var(--blue-pale); color: var(--black); resize: vertical; line-height: 1.5; min-height: 180px;
+    }
+    .submit-page-textarea::placeholder { color: var(--gray-light); }
+    .submit-page-textarea:focus { outline: none; border-color: var(--blue); }
+    .submit-page-char { position: absolute; bottom: 14px; right: 16px; font-family: var(--font); font-size: 12px; color: var(--gray-light); }
+    .submit-page-char.warn { color: #F59E0B; }
+    .submit-page-char.over { color: #EF4444; }
+    .submit-page-btn {
+      width: 100%; padding: 18px; background: var(--black); color: white; border: none;
+      border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer;
+      font-family: var(--font); margin-bottom: 16px; display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+    .submit-page-btn:hover { background: #1E293B; }
+    .submit-page-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .submit-page-fine { font-family: var(--font); font-size: 13px; color: var(--gray-light); text-align: center; }
+    .submit-page-result { margin-top: 16px; padding: 16px; border-radius: 12px; font-family: var(--font); font-size: 14px; line-height: 1.5; }
+    .submit-page-result.approved { background: #DCFCE7; color: #166534; }
+    .submit-page-result.rejected { background: #FEF2F2; color: #991B1B; }
+
+    /* ── Footer ── */
+    .footer { max-width: 1280px; margin: 0 auto; padding: 32px 48px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .footer-logo { font-family: var(--font); font-size: 18px; font-weight: 700; color: var(--black); }
+    .footer-copy { font-family: var(--font); font-size: 13px; color: var(--gray-light); }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .nav { padding: 16px 20px; }
+      .nav-link { display: none; }
+      .nav-share { padding: 10px 16px; font-size: 12px; }
+      .hero { grid-template-columns: 1fr; padding: 48px 20px 40px; gap: 40px; }
+      .hero h1 { font-size: 38px; }
+      .hero-cards { height: 400px; }
+      .float-card { width: 240px; padding: 18px; }
+      .float-card.c1 { left: 0; }
+      .float-card.c2 { right: -10px; top: 140px; }
+      .float-card.c3 { left: 20px; }
+      .hero-email { flex-direction: column; }
+      .stories-section { padding: 0 20px 64px; }
+      .stories-title { font-size: 26px; }
+      .stories-grid { grid-template-columns: 1fr; }
+      .submit-section { padding: 0 20px 64px; }
+      .submit-inner { grid-template-columns: 1fr; padding: 28px; gap: 24px; }
+      .submit-title { font-size: 24px; }
+      .how-section { padding: 48px 20px; }
+      .how-title { font-size: 26px; }
+      .how-grid { grid-template-columns: 1fr; }
+      .cta-section { padding: 64px 20px; }
+      .cta-title { font-size: 30px; }
+      .cta-email { flex-direction: column; }
+      .footer { padding: 24px 20px; flex-direction: column; gap: 12px; }
+      .library-page { padding: 40px 20px 64px; }
+      .library-title { font-size: 30px; }
+      .library-grid { grid-template-columns: 1fr; }
+      .library-filters { gap: 6px; }
+      .library-filter { font-size: 12px; padding: 7px 14px; }
+      .subscribe-page { padding: 48px 20px; }
+      .subscribe-page h1 { font-size: 30px; }
+      .submit-page { padding: 40px 16px; }
+      .submit-page h1 { font-size: 28px; }
+      .submit-page-card { padding: 32px 24px; }
+      .report-modal { margin: 20px; padding: 24px; }
+    }
+  `;
+
+  return (
+    <div style={{ fontFamily: "var(--font)", background: "white", minHeight: "100vh" }}>
+      <style>{css}</style>
+
+      {/* Nav */}
+      <div className="nav-wrapper">
+        <nav className="nav">
+          <div className="nav-logo" onClick={() => setPage("home")}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--blue)" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            The Dating Tales
+          </div>
+          <div className="nav-right">
+            <span className="nav-link" onClick={() => setPage("library")}>Story library</span>
+            <span className="nav-link" onClick={() => setPage("subscribe")}>Subscribe</span>
+            <button className="nav-share" onClick={() => setPage("submit")}>Share your story</button>
+          </div>
+        </nav>
+      </div>
+
+      {page === "home" && (<>
+      {/* Hero */}
+      <section className="hero">
+        <div>
+          <div className={`hero-eyebrow ${loaded ? "fade-up d1" : ""}`}>
+            <span className="eyebrow-dot" /> New stories drop every Friday
+          </div>
+          <h1 className={loaded ? "fade-up d1" : ""}>
+            Share a story.<br /><em>Laugh together.</em>
+          </h1>
+          <p className={`hero-sub ${loaded ? "fade-up d2" : ""}`}>
+            Anonymous dating stories, delivered every Friday. Because dating is better when we're all in on the joke.
+          </p>
+          <div className={loaded ? "fade-up d3" : ""}>
+            {sub ? (
+              <div className="hero-subbed">✓ You're in — see you Friday!</div>
+            ) : (
+              <div className="hero-email">
+                <input className="hero-input" placeholder="name@email.com" value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
+                <button className="hero-btn" onClick={handleSubscribe}>Subscribe <Arrow /></button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className={`hero-cards ${loaded ? "fade-up d2" : ""}`}>
+          <div className="float-card c1">
+            <span className="fc-tag">First Dates</span>
+            <div className="fc-title">The Spaghetti Incident</div>
+            <div className="fc-text">Ordered spaghetti to seem cultured. Sauce on my forehead, noodle on my chin...</div>
+            <div className="fc-reactions"><span>😂 89</span><span>❤️ 45</span></div>
+          </div>
+          <div className="float-card c2">
+            <span className="fc-tag">Meet Cutes</span>
+            <div className="fc-title">Dog Park Destiny</div>
+            <div className="fc-text">My dog knocked his coffee everywhere. He looked at me and said "worth it."</div>
+            <div className="fc-reactions"><span>❤️ 95</span><span>✨ 41</span></div>
+          </div>
+          <div className="float-card c3">
+            <span className="fc-tag">Situationships</span>
+            <div className="fc-title">The Label Talk</div>
+            <div className="fc-text">"I like what we have." "What do we have?" "This conversation is a great example."</div>
+            <div className="fc-reactions"><span>😂 134</span><span>💀 67</span></div>
+          </div>
+        </div>
+      </section>
+
+      {/* This week's stories */}
+      <div className="stories-section">
+        <div className="stories-header">
+          <div>
+            <div className="stories-title">This week's drop</div>
+            <div className="rainbow-accent" />
+          </div>
+          <span className="stories-link" onClick={() => setPage("library")}>Browse all stories <Arrow /></span>
+        </div>
+        <div className="stories-grid">
+          {homeStories.map((s) => (
+            <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} reacted={storyReactions} />
+          ))}
+        </div>
+      </div>
+
+      {/* Submit (homepage) */}
+      <div className="submit-section">
+        <div className="submit-inner">
+          <div>
+            <h2 className="submit-title">Got a story?</h2>
+            <p className="submit-sub">Funny, cringey, sweet — we want it all. Your worst date is someone's best Friday read. All stories are anonymous and AI-edited for safety.</p>
+          </div>
+          <div>
+            <div className="submit-form-area">
+              <textarea className="submit-textarea" placeholder="Tell us your funniest, cringiest, or cutest dating moment…"
+                rows={5} value={storyText} onChange={e => setStoryText(e.target.value.slice(0, 500))} maxLength={500} />
+              <span className={`submit-char-count ${storyText.length > 500 ? "over" : storyText.length > 400 ? "warn" : ""}`}>{storyText.length}/500</span>
+            </div>
+            <div className="submit-row">
+              <button className="submit-btn" onClick={handleSubmitStory} disabled={!storyText.trim() || submitting}>
+                {submitting ? <><span className="spinner" /> Processing...</> : <>Submit story <Arrow /></>}
+              </button>
+            </div>
+            {submitResult && (
+              <div className={`submit-result ${submitResult.type}`}>
+                {submitResult.type === "approved"
+                  ? <div><strong>Your DatingTale is in!</strong> Your tale has been anonymized and queued for this week's drop.</div>
+                  : <div>{submitResult.message}</div>}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* How it works */}
+      <div className="how-section">
+        <div className="how-inner">
+          <div className="how-title">How it works</div>
+          <div className="how-grid">
+            <div className="how-card"><div className="how-num">01</div><h3>Share your tale</h3><p>Submit your anonymous dating story. Funny, cringey, sweet — we want it all. No names, no judgment.</p></div>
+            <div className="how-card"><div className="how-num">02</div><h3>We give it a glow-up</h3><p>Our AI polishes your story while keeping your voice. All identifying details are removed automatically.</p></div>
+            <div className="how-card"><div className="how-num">03</div><h3>Friday drop</h3><p>Every Friday, the best stories go live on the site and land in your inbox. Fresh dating chaos, weekly.</p></div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="cta-section">
+        <div className="cta-title">Your inbox deserves better stories.</div>
+        <p className="cta-sub">Every Friday, real stories from real people navigating the beautiful mess of modern dating.</p>
+        <div className="cta-email">
+          <input className="cta-input" placeholder="name@email.com" value={email} onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
+          <button className="cta-btn" onClick={handleSubscribe}>{sub ? "Subscribed ✓" : "Subscribe"}</button>
+        </div>
+      </div>
+      </>)}
+
+      {/* Library */}
+      {page === "library" && (
+        <div className="library-page">
+          <div className="library-header">
+            <h1 className="library-title">Story library</h1>
+            <p className="library-sub">Every tale from the dating trenches — all in one place.</p>
+          </div>
+          <div className="library-filters">
+            {allThemes.map(t => (
+              <button key={t} className={`library-filter ${filter === t ? "active" : ""}`} onClick={() => setFilter(t)}>{t}</button>
+            ))}
+          </div>
+          {filteredThisWeek.length > 0 && (
+            <>
+              <div className="library-section-title">This week's drop</div>
+              <div className="rainbow-accent" style={{ marginBottom: 20 }} />
+              <div className="library-grid">
+                {filteredThisWeek.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} reacted={storyReactions} />)}
+              </div>
+            </>
+          )}
+          {filteredOlder.length > 0 && (
+            <>
+              {filteredThisWeek.length > 0 && <div className="library-divider" />}
+              <div className="library-section-title">All stories</div>
+              <div className="library-grid">
+                {filteredOlder.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} reacted={storyReactions} />)}
+              </div>
+            </>
+          )}
+          {filteredThisWeek.length === 0 && filteredOlder.length === 0 && (
+            <div className="library-grid"><div className="library-empty">No stories found for this filter.</div></div>
+          )}
+        </div>
+      )}
+
+      {/* Subscribe Page */}
+      {page === "subscribe" && (
+        <div className="subscribe-page">
+          <div className="subscribe-heart">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="#2563EB" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <h1>Get stories every <em>Friday</em></h1>
+          <p className="subscribe-page-sub">The funniest, cringiest, and cutest anonymous dating tales — curated and delivered to your inbox weekly.</p>
+          {sub ? (
+            <div className="hero-subbed" style={{ justifyContent: "center", marginBottom: 16 }}>✓ You're in — see you Friday!</div>
+          ) : (<>
+            <input className="subscribe-page-input" placeholder="name@email.com" value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
+            <button className="subscribe-page-btn" onClick={handleSubscribe}>Subscribe — it's free</button>
+          </>)}
+          <p className="subscribe-page-fine">No spam, ever. Unsubscribe anytime.</p>
+        </div>
+      )}
+
+      {/* Submit Page */}
+      {page === "submit" && (
+        <div className="submit-page">
+          <div className="submit-page-rainbow" />
+          <div className="submit-page-card">
+            <h1>Spill it. Anonymously.</h1>
+            <p className="submit-page-sub">Your story stays between us (and a few thousand readers).</p>
+            <div className="submit-page-form">
+              <textarea className="submit-page-textarea" placeholder="Tell us your funniest, cringiest, or cutest dating moment…"
+                value={storyText} onChange={e => setStoryText(e.target.value.slice(0, 500))} maxLength={500} />
+              <span className={`submit-page-char ${storyText.length > 500 ? "over" : storyText.length > 400 ? "warn" : ""}`}>{storyText.length}/500</span>
+            </div>
+            <button className="submit-page-btn" onClick={handleSubmitStory} disabled={!storyText.trim() || submitting}>
+              {submitting ? <><span className="spinner" /> Our AI is polishing your tale...</> : "Submit story"}
+            </button>
+            <p className="submit-page-fine">All stories are anonymized and lightly edited by AI for clarity and safety.</p>
+            {submitResult && (
+              <div className={`submit-page-result ${submitResult.type}`}>
+                {submitResult.type === "approved"
+                  ? <div><strong>Your DatingTale is in!</strong> Your tale has been anonymized and queued for this week's drop. All stories are reviewed before publishing.</div>
+                  : <div>{submitResult.message}</div>}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-logo">The Dating Tales</div>
+        <div className="footer-copy">© 2026 The Dating Tales. All stories are anonymous.</div>
+      </footer>
+    </div>
+  );
+}
