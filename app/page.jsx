@@ -136,8 +136,8 @@ function StoryCard({ story, onReaction, onReport, reacted }) {
   const handleCloseReport = () => { setReportStep(null); if (pendingReport) { onReport(story.id, selectedReason); } setSelectedReason(null); setPendingReport(false); };
 
   const handleShare = async () => {
-    const shareText = `"${story.title}" — ${story.text}\n\n— ${story.author} on The Dating Tales`;
-    const shareUrl = "https://thedatingtales.com";
+    const shareText = `"${story.title}" — ${story.text}\n\n— ${story.author} on Date & Tell`;
+    const shareUrl = "https://dateandtell.com";
     try {
       if (navigator.share) {
         await navigator.share({ title: story.title, text: shareText, url: shareUrl });
@@ -194,7 +194,7 @@ function StoryCard({ story, onReaction, onReport, reacted }) {
             {reportStep === "select" ? (
               <>
                 <h3>Report this story</h3>
-                <p className="report-sub">Help us keep DatingTales safe. Why are you reporting this?</p>
+                <p className="report-sub">Help us keep Date & Tell safe. Why are you reporting this?</p>
                 <div className="report-options">
                   {REPORT_REASONS.map(reason => (
                     <button key={reason} className={`report-option ${selectedReason === reason ? "selected" : ""}`} onClick={() => setSelectedReason(reason)}>
@@ -229,7 +229,7 @@ function StoryCard({ story, onReaction, onReport, reacted }) {
 }
 
 // ── Main App ──
-export default function DatingTalesV2() {
+export default function DateAndTell() {
   const getPageFromPath = () => {
     const path = window.location.pathname.replace(/^\//, "");
     if (["library", "submit", "subscribe"].includes(path)) return path;
@@ -323,7 +323,7 @@ export default function DatingTalesV2() {
       });
       const result = await res.json();
       if (result.status === "rejected") {
-        setSubmitResult({ type: "rejected", message: result.reason || "We couldn't publish this one — but we'd love a lighter version!" });
+        setSubmitResult({ type: "rejected", message: result.reason || "We couldn't publish this one, but we'd love a lighter version!" });
       } else {
         setSubmitResult({ type: "approved", storyId: result.storyId, story: { title: result.title, theme: result.theme, author: result.author, text: result.rewritten } });
         setStoryText("");
@@ -1031,7 +1031,7 @@ export default function DatingTalesV2() {
         <nav className="nav">
           <div className="nav-logo" onClick={() => setPage("home")}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--blue)" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            The Dating Tales
+            Date & Tell
           </div>
           <div className="nav-right">
             <span className="nav-link" onClick={() => setPage("library")}>Story library</span>
@@ -1061,14 +1061,14 @@ export default function DatingTalesV2() {
             <span className="eyebrow-dot" /> New stories drop every Friday
           </div>
           <h1 className={loaded ? "fade-up d1" : ""}>
-            Share a story.<br /><em>Laugh together.</em>
+            Date. Tell.<br /><em>Love, Anonymous.</em>
           </h1>
           <p className={`hero-sub ${loaded ? "fade-up d2" : ""}`}>
-            Anonymous dating stories, delivered every Friday. Because dating is better when we're all in on the joke.
+            Anonymous dating stories, delivered every Friday. Because the best stories are the ones you can't keep to yourself.
           </p>
           <div className={loaded ? "fade-up d3" : ""}>
             {sub ? (
-              <div className="hero-subbed">✓ You're in — see you Friday!</div>
+              <div className="hero-subbed">✓ You're in! See you Friday!</div>
             ) : (
               <div className="hero-email">
                 <input className="hero-input" placeholder="name@email.com" value={email}
@@ -1107,7 +1107,7 @@ export default function DatingTalesV2() {
         <div className="submit-inner">
           <div>
             <h2 className="submit-title">Got a story?</h2>
-            <p className="submit-sub">Funny, cringey, sweet — we want it all. Your worst date is someone's best Friday read. Write as much as you want — our AI anonymizes and condenses every story.</p>
+            <p className="submit-sub">Funny, cringey, sweet, we want it all. Your worst date is someone's best Friday read. Write as much as you want, our AI anonymizes and condenses every story.</p>
           </div>
           <div>
             <div className="submit-form-area">
@@ -1146,9 +1146,9 @@ export default function DatingTalesV2() {
         <div className="how-inner">
           <div className="how-title">How it works</div>
           <div className="how-grid">
-            <div className="how-card"><div className="how-num">01</div><h3>Share your tale</h3><p>Submit your anonymous dating story. Funny, cringey, sweet — we want it all. No names, no judgment.</p></div>
+            <div className="how-card"><div className="how-num">01</div><h3>Tell your story</h3><p>Submit your anonymous dating story. Funny, cringey, sweet, we want it all. No names, no judgment.</p></div>
             <div className="how-card"><div className="how-num">02</div><h3>We give it a glow-up</h3><p>Our AI polishes your story while keeping your voice. All identifying details are removed automatically.</p></div>
-            <div className="how-card"><div className="how-num">03</div><h3>Friday drop</h3><p>Every Friday, the best stories go live on the site and land in your inbox. Fresh dating chaos, weekly.</p></div>
+            <div className="how-card"><div className="how-num">03</div><h3>Friday drop</h3><p>Every Friday, the best stories go live on the site and land in your inbox. Fresh stories, weekly.</p></div>
           </div>
         </div>
       </div>
@@ -1156,7 +1156,7 @@ export default function DatingTalesV2() {
       {/* CTA */}
       <div className="cta-section">
         <div className="cta-title">Your inbox deserves better stories.</div>
-        <p className="cta-sub">Every Friday, real stories from real people navigating the beautiful mess of modern dating.</p>
+        <p className="cta-sub">Every Friday, real stories from real people navigating the beautiful mess of modern dating. Love, Anonymous.</p>
         <div className="cta-email">
           <input className="cta-input" placeholder="name@email.com" value={email} onChange={e => setEmail(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
@@ -1170,7 +1170,7 @@ export default function DatingTalesV2() {
         <div className="library-page">
           <div className="library-header">
             <h1 className="library-title">Story library</h1>
-            <p className="library-sub">Every tale from the dating trenches — all in one place.</p>
+            <p className="library-sub">Every tale from the dating trenches, all in one place.</p>
           </div>
           <div className="library-search">
             <div className="library-search-icon">
@@ -1212,14 +1212,14 @@ export default function DatingTalesV2() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="#2563EB" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </div>
           <h1>Get stories every <em>Friday</em></h1>
-          <p className="subscribe-page-sub">The funniest, cringiest, and cutest anonymous dating tales — curated and delivered to your inbox weekly.</p>
+          <p className="subscribe-page-sub">The funniest, cringiest, and cutest anonymous dating stories, curated and delivered to your inbox weekly.</p>
           {sub ? (
-            <div className="hero-subbed" style={{ justifyContent: "center", marginBottom: 16 }}>✓ You're in — see you Friday!</div>
+            <div className="hero-subbed" style={{ justifyContent: "center", marginBottom: 16 }}>✓ You're in! See you Friday!</div>
           ) : (<>
             <input className="subscribe-page-input" placeholder="name@email.com" value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
-            <button className="subscribe-page-btn" onClick={handleSubscribe}>Subscribe — it's free</button>
+            <button className="subscribe-page-btn" onClick={handleSubscribe}>Subscribe (it's free)</button>
           </>)}
           <p className="subscribe-page-fine">No spam, ever. Unsubscribe anytime.</p>
         </div>
@@ -1238,9 +1238,9 @@ export default function DatingTalesV2() {
               <span className={`submit-page-char ${storyText.length > 500 ? "over" : storyText.length > 400 ? "warn" : ""}`}>{storyText.length}/500</span>
             </div>
             <button className="submit-page-btn" onClick={handleSubmitStory} disabled={!storyText.trim() || submitting}>
-              {submitting ? <><span className="spinner" /> Our AI is polishing your tale...</> : "Submit story"}
+              {submitting ? <><span className="spinner" /> Our AI is polishing your story...</> : "Submit story"}
             </button>
-            <p className="submit-page-fine">All stories are anonymized and condensed by AI to fit our format. Write as much as you want — we'll handle the rest.</p>
+            <p className="submit-page-fine">All stories are anonymized and condensed by AI to fit our format. Write as much as you want, we'll handle the rest.</p>
             {renderSubmissionPreview()}
           </div>
         </div>
@@ -1248,9 +1248,9 @@ export default function DatingTalesV2() {
 
       {/* Footer */}
       <footer className="footer">
-        <div className="footer-logo">The Dating Tales</div>
-        <a href="mailto:thedatingtales@gmail.com" className="footer-email">thedatingtales@gmail.com</a>
-        <div className="footer-copy">© 2026 The Dating Tales. All stories are anonymous.</div>
+        <div className="footer-logo">Date & Tell</div>
+        <a href="mailto:hello@dateandtell.com" className="footer-email">hello@dateandtell.com</a>
+        <div className="footer-copy">© 2026 Date & Tell. Love, Anonymous.</div>
       </footer>
     </div>
   );
