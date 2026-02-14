@@ -24,7 +24,7 @@ export async function POST(request) {
         max_tokens: 1000,
         messages: [{
           role: "user",
-          content: `You are a story editor for The Dating Tales, an anonymous dating story platform. Your job is to lightly edit submissions while keeping the original voice intact.
+          content: `You are a story editor for Date & Tell, an anonymous dating story platform. Your job is to lightly edit submissions while keeping the original voice intact.
 
 REJECTION RULES:
 Reject if the story contains: explicit sexual content, hate speech, harassment, illegal activity, defamation, or violent content. If rejecting, respond with: {"status":"rejected","reason":"brief reason"}
