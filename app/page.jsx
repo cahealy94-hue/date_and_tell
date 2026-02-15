@@ -494,9 +494,16 @@ export default function DateAndTell() {
       padding: 20px 48px; max-width: 1280px; margin: 0 auto;
     }
     .nav-logo {
+      display: flex; flex-direction: column; cursor: pointer; line-height: 1;
+    }
+    .nav-logo-text {
       font-family: 'League Spartan', var(--font); font-size: 34px; font-weight: 800;
       color: var(--black); letter-spacing: -0.03em;
-      display: flex; align-items: center; cursor: pointer;
+    }
+    .nav-logo-tagline {
+      font-family: var(--font); font-size: 11px; font-weight: 400;
+      color: var(--blue); letter-spacing: 0.02em; font-style: italic;
+      margin-top: 1px;
     }
     .nav-right { display: flex; align-items: center; gap: 20px; }
     .nav-link {
@@ -1029,7 +1036,8 @@ export default function DateAndTell() {
       <div className="nav-wrapper">
         <nav className="nav">
           <div className="nav-logo" onClick={() => setPage("home")}>
-            Date&amp;Tell
+            <span className="nav-logo-text">Date&amp;Tell</span>
+            <span className="nav-logo-tagline">Love, Anonymous.</span>
           </div>
           <div className="nav-right">
             <span className="nav-link" onClick={() => setPage("library")}>Story library</span>
@@ -1059,10 +1067,10 @@ export default function DateAndTell() {
             <span className="eyebrow-dot" /> New stories drop every Friday
           </div>
           <h1 className={loaded ? "fade-up d1" : ""}>
-            Date. Tell.<br /><em>Love, Anonymous.</em>
+            Real dating stories,<br /><em>told anonymously.</em>
           </h1>
           <p className={`hero-sub ${loaded ? "fade-up d2" : ""}`}>
-            Anonymous dating stories, delivered every Friday. Because the best stories are the ones you can't keep to yourself.
+            Funny, cringey, sweet. New stories every Friday.
           </p>
           <div className={loaded ? "fade-up d3" : ""}>
             {sub ? (
