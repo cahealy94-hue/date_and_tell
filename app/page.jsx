@@ -971,15 +971,17 @@ export default function DateAndTell() {
     .submit-page-fine { font-family: var(--font); font-size: 13px; color: var(--gray-light); text-align: center; }
 
     /* ── Post-Submit Inline Signup ── */
-    .post-submit-signup { margin-top: 24px; background: var(--blue-pale); border: 1.5px solid var(--blue-light); border-radius: 16px; padding: 28px 24px; }
+    .post-submit-signup { margin-top: 24px; background: white; border: 2px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .post-submit-signup-rainbow { height: 5px; background: linear-gradient(90deg, #EF4444, #F59E0B, #3B82F6, #8B5CF6, #EC4899); }
+    .post-submit-signup-inner { padding: 28px 24px; }
     .post-submit-signup-header { margin-bottom: 20px; }
-    .post-submit-signup-title { font-family: var(--font); font-size: 18px; font-weight: 700; color: var(--black); margin-bottom: 6px; }
+    .post-submit-signup-title { font-family: var(--font); font-size: 20px; font-weight: 700; color: var(--black); margin-bottom: 6px; }
     .post-submit-signup-sub { font-family: var(--font); font-size: 14px; color: var(--gray); line-height: 1.5; }
-    .post-submit-signup .auth-input { background: white; }
+    .post-submit-signup .auth-input { background: white; border: 2px solid var(--border); }
     .post-submit-signup .auth-switch { margin-top: 4px; }
 
-    .submit-another-btn { width: 100%; margin-top: 16px; padding: 14px; background: none; border: 1.5px solid var(--border); border-radius: 12px; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.2s; }
-    .submit-another-btn:hover { border-color: var(--blue-light); color: var(--black); }
+    .submit-another-btn { width: 100%; margin-top: 20px; padding: 16px; background: white; border: 2px solid var(--border); border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 700; color: var(--black); cursor: pointer; transition: all 0.2s; }
+    .submit-another-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-pale); }
     .submit-page-result { margin-top: 16px; padding: 16px; border-radius: 12px; font-family: var(--font); font-size: 14px; line-height: 1.5; }
     .submit-page-result.approved { background: #DCFCE7; color: #166534; }
     .submit-page-result.rejected { background: #FEF2F2; color: #991B1B; }
@@ -1209,6 +1211,8 @@ export default function DateAndTell() {
 
                 {!authUser && submitResult.type === "approved" && (
                   <div className="post-submit-signup">
+                    <div className="post-submit-signup-rainbow" />
+                    <div className="post-submit-signup-inner">
                     <div className="post-submit-signup-header">
                       <div className="post-submit-signup-title">Save your story to your account</div>
                       <div className="post-submit-signup-sub">Create a free account to track reactions, shares, and more.</div>
@@ -1227,6 +1231,7 @@ export default function DateAndTell() {
                     </button>
                     <div className="auth-switch">
                       Already have an account? <span className="auth-switch-link" onClick={() => setPage("login")}>Log in</span>
+                    </div>
                     </div>
                   </div>
                 )}
@@ -1367,6 +1372,8 @@ export default function DateAndTell() {
                 {/* Inline signup after submission (only if not logged in) */}
                 {!authUser && submitResult.type === "approved" && (
                   <div className="post-submit-signup">
+                    <div className="post-submit-signup-rainbow" />
+                    <div className="post-submit-signup-inner">
                     <div className="post-submit-signup-header">
                       <div className="post-submit-signup-title">Save your story to your account</div>
                       <div className="post-submit-signup-sub">Create a free account to track reactions, shares, and more.</div>
@@ -1390,6 +1397,7 @@ export default function DateAndTell() {
 
                     <div className="auth-switch">
                       Already have an account? <span className="auth-switch-link" onClick={() => setPage("login")}>Log in</span>
+                    </div>
                     </div>
                   </div>
                 )}
