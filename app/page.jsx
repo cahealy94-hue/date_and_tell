@@ -248,7 +248,9 @@ export default function DateAndTell() {
   const [editingSubmission, setEditingSubmission] = useState(false);
   const [editedText, setEditedText] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
-  const [storyReactions, setStoryReactions] = useState({});
+  const [storyReactions, setStoryReactions] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("dt_reactions") || "{}"); } catch { return {}; }
+  });
   const [hiddenStories, setHiddenStories] = useState(new Set());
   const [mobileMenu, setMobileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -286,7 +288,7 @@ export default function DateAndTell() {
               text: s.rewritten_text,
               tags: Array.isArray(s.search_tags) ? s.search_tags : [],
               publishedAt: s.published_at?.split("T")[0] || new Date().toISOString().split("T")[0],
-              reactions: {},
+              reactions: s.reactions || {},
             }));
             setStories(dbStories);
           }
@@ -338,9 +340,13 @@ export default function DateAndTell() {
   const handleReaction = useCallback((storyId, emoji) => {
     const key = `${storyId}-${emoji}`;
     const alreadyReacted = storyReactions[key];
+    const action = alreadyReacted ? "remove" : "add";
+
+    // Update local state immediately
     setStoryReactions(prev => {
       const next = { ...prev };
       if (alreadyReacted) { delete next[key]; } else { next[key] = true; }
+      try { localStorage.setItem("dt_reactions", JSON.stringify(next)); } catch {}
       return next;
     });
     setStories(prev => prev.map(s => {
@@ -350,6 +356,13 @@ export default function DateAndTell() {
       if (reactions[emoji] <= 0) delete reactions[emoji];
       return { ...s, reactions };
     }));
+
+    // Persist to database
+    fetch("/api/react", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ storyId, emoji, action }),
+    }).catch(err => console.error("Reaction save error:", err));
   }, [storyReactions]);
 
   const handleReport = useCallback(async (storyId, reason) => {
@@ -374,7 +387,7 @@ export default function DateAndTell() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ storyId: submitResult.storyId, rewritten_text: editedText }),
       });
-      setSubmitResult(prev => ({ ...prev, story: { ...prev.story, text: editedText } }));
+      setSubmitResult(prev => ({ ...prev, story: { ...prev.story, text: editedText }, edited: true }));
       setEditingSubmission(false);
     } catch (err) { console.error("Edit error:", err); }
     setSavingEdit(false);
@@ -401,8 +414,8 @@ export default function DateAndTell() {
         <div className="sp-header">
           <div className="sp-check"><CheckIcon /></div>
           <div className="sp-header-text">
-            <div className="sp-title-text">Here's your story</div>
-            <div className="sp-subtitle">Submitted for review. If anything looks off, tap the pencil to tweak it.</div>
+            <div className="sp-title-text">{submitResult.edited ? "Story updated" : "Here's your story"}</div>
+            <div className="sp-subtitle">{submitResult.edited ? "Your changes have been saved. The story is back in review with your edits." : "Submitted for review. If anything looks off, tap the pencil to tweak it."}</div>
           </div>
         </div>
         <div className="sp-card">
