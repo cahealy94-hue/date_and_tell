@@ -1,5 +1,5 @@
 export async function POST(request) {
-  const { storyText } = await request.json();
+  const { storyText, userId } = await request.json();
 
   if (!storyText || !storyText.trim()) {
     return Response.json({ status: "rejected", reason: "No story provided." }, { status: 400 });
@@ -99,7 +99,7 @@ ${storyText}`
           "Content-Type": "application/json",
           apikey: SUPABASE_SERVICE_KEY,
           Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-          Prefer: "return=minimal",
+          Prefer: "return=representation",
         },
         body: JSON.stringify({
           original_text: storyText,
@@ -111,10 +111,16 @@ ${storyText}`
           city: decodeURIComponent(city),
           country,
           status: "pending",
+          ...(userId ? { user_id: userId } : {}),
         }),
       });
       if (!saveRes.ok) {
         console.error("Supabase save error:", saveRes.status, await saveRes.text());
+      } else {
+        const saved = await saveRes.json();
+        if (Array.isArray(saved) && saved.length > 0) {
+          result.storyId = saved[0].id;
+        }
       }
     } catch (err) {
       console.error("Supabase save error:", err);
