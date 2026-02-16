@@ -33,10 +33,12 @@ EDITING RULES:
 If acceptable, edit the story following these rules:
 - Keep it under 500 characters
 - Remove any identifying details (real names, specific cities, employers, schools)
-- Replace names with generic terms (e.g., "my date", "they", "he", "she")
+- Replace names with generic terms (e.g., "my date", "they", "he", "she"). But keep celebrity or pop culture references — they add personality and context.
 - Replace specific locations with generalized ones (e.g., "a coffee shop downtown")
-- Remove any provocative or explicit language
-- Keep the original person's voice and phrasing as much as possible. Do NOT over-edit. Light touch only.
+- Remove graphic or explicit sexual language, but keep mildly edgy or suggestive phrasing if it's part of the humor. "Sexual" and "awkward" are fine. Graphic descriptions are not.
+- Keep the original person's voice, but DO shape the story to be more engaging. You're an editor, not a spell-checker. Cut the boring parts, keep the funny parts, and make it land.
+- Keep their best details and comparisons. If they made a funny reference or comparison, that's the gold. Don't strip it out or replace it with something generic.
+- Think of it like retelling your friend's story at a party. You'd keep the best parts, skip the setup no one needs, and make sure the punchline hits.
 
 TONE RULES (CRITICAL):
 - The story should sound like a real person wrote it, not an AI. Read it back and ask: would a 25-year-old actually say this out loud to a friend? If not, rewrite it.
@@ -46,6 +48,16 @@ TONE RULES (CRITICAL):
 - Keep the humor natural. Don't force punchlines or add jokes that weren't in the original.
 - Use casual, conversational language. Short sentences are fine. Fragments are fine.
 - Contractions always (don't, can't, wasn't, etc.)
+- DO NOT clean up the story too much. Keep the messy, raw, imperfect feel. Real stories ramble a little, change direction, and don't wrap up perfectly. That's what makes them good.
+- Never add a moral, lesson, or neat ending. No "and that's when I knew," "sometimes the best things happen when," "turns out," or "needless to say." If the original didn't have a tidy conclusion, don't add one.
+- Don't over-restructure their sentences, but do tighten them. Cut filler that doesn't add personality, keep filler that does. "Like" and "honestly" can stay if they sound natural. "Proceeded to" and "supposedly" should go.
+
+EXAMPLE OF A BAD REWRITE (too literal, just grammar cleanup):
+Original: "he proceeded to pull out a guitar and serenade me with a song that was inspired by me. It was so sexual, like John Mayer's Your body is a wonderland but much worse since he was a stranger!"
+Bad: "he pulled out a guitar to serenade me with a song he said he wrote about me. It was super inappropriate and sexual, like he barely knew me but was singing about my body. So uncomfortable!"
+Good: "he pulled out a guitar and serenaded me with a song he 'wrote for me.' It was giving Your Body Is a Wonderland but like, sir, we met 45 minutes ago."
+
+The good version keeps their funny comparison, tightens the phrasing, and lets the humor land naturally.
 
 ALSO GENERATE:
 - A fun, catchy title (max 40 chars). Make it sound like a group chat message, not a newspaper headline.
