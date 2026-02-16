@@ -891,6 +891,13 @@ export default function DateAndTell() {
     .dash-story-text { font-family: var(--font); font-size: 14px; color: var(--gray); line-height: 1.6; margin-bottom: 12px; }
     .dash-story-meta { display: flex; gap: 20px; font-family: var(--font); font-size: 13px; color: var(--gray-light); }
     .dash-story-meta span { display: flex; align-items: center; gap: 4px; }
+    .dash-story-reactions { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .dash-reaction-pill { display: flex; align-items: center; gap: 4px; padding: 6px 12px; background: var(--blue-pale); border-radius: 100px; font-size: 14px; }
+    .dash-reaction-count { font-family: var(--font); font-size: 13px; font-weight: 700; color: var(--black); }
+    .dash-reaction-total { font-family: var(--font); font-size: 12px; color: var(--gray-light); font-weight: 500; margin-left: 4px; }
+    .dash-share-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; margin-top: 12px; background: var(--blue-pale); border: 1.5px solid var(--blue-light); border-radius: 12px; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--blue); cursor: pointer; transition: all 0.2s; }
+    .dash-share-btn:hover { background: var(--blue-light); border-color: var(--blue); }
+    .dash-share-btn svg { width: 16px; height: 16px; stroke: var(--blue); }
     .dash-empty { text-align: center; padding: 60px 20px; }
     .dash-empty-icon { font-size: 40px; margin-bottom: 12px; }
     .dash-empty-title { font-family: var(--font); font-size: 20px; font-weight: 700; color: var(--black); margin-bottom: 8px; }
@@ -1517,6 +1524,7 @@ export default function DateAndTell() {
               dashboardStories.map(s => {
                 const statusStyle = getStatusColor(s.status);
                 const totalReactions = getTotalReactions(s.reactions);
+                const isPublished = s.status === "published";
                 return (
                   <div key={s.id} className="dash-story">
                     <div className="dash-story-top">
@@ -1524,11 +1532,49 @@ export default function DateAndTell() {
                       <span className="dash-story-status" style={{ background: statusStyle.bg, color: statusStyle.color }}>{s.status}</span>
                     </div>
                     <div className="dash-story-text">{s.rewritten_text}</div>
+
+                    {isPublished && s.reactions && Object.keys(s.reactions).length > 0 && (
+                      <div className="dash-story-reactions">
+                        {EMOJI_OPTIONS.map(emoji => {
+                          const count = s.reactions?.[emoji] || 0;
+                          if (count === 0) return null;
+                          return (
+                            <span key={emoji} className="dash-reaction-pill">
+                              {emoji} <span className="dash-reaction-count">{count}</span>
+                            </span>
+                          );
+                        })}
+                        <span className="dash-reaction-total">{totalReactions} total</span>
+                      </div>
+                    )}
+
                     <div className="dash-story-meta">
-                      <span>📊 {totalReactions} reaction{totalReactions !== 1 ? "s" : ""}</span>
+                      {!isPublished && <span>📊 {totalReactions} reaction{totalReactions !== 1 ? "s" : ""}</span>}
                       <span>🏷️ {s.theme}</span>
                       <span>📅 {s.submitted_at ? new Date(s.submitted_at).toLocaleDateString() : "—"}</span>
                     </div>
+
+                    {isPublished && (
+                      <button className="dash-share-btn" onClick={async (e) => {
+                        const shareText = `"${s.title}" — ${s.rewritten_text}\n\n— ${s.author_persona} on Date & Tell`;
+                        const shareUrl = "https://dateandtell.com";
+                        try {
+                          if (navigator.share) {
+                            await navigator.share({ title: s.title, text: shareText, url: shareUrl });
+                            return;
+                          }
+                          if (navigator.clipboard) {
+                            await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+                            const btn = e.currentTarget;
+                            const orig = btn.innerHTML;
+                            btn.textContent = "Copied to clipboard!";
+                            setTimeout(() => { btn.innerHTML = orig; }, 1500);
+                          }
+                        } catch {}
+                      }}>
+                        <ShareIcon /> Share this story
+                      </button>
+                    )}
                   </div>
                 );
               })
