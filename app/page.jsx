@@ -337,12 +337,17 @@ export default function DateAndTell() {
 
   const handleReaction = useCallback((storyId, emoji) => {
     const key = `${storyId}-${emoji}`;
-    if (storyReactions[key]) return;
-    setStoryReactions(prev => ({ ...prev, [key]: true }));
+    const alreadyReacted = storyReactions[key];
+    setStoryReactions(prev => {
+      const next = { ...prev };
+      if (alreadyReacted) { delete next[key]; } else { next[key] = true; }
+      return next;
+    });
     setStories(prev => prev.map(s => {
       if (s.id !== storyId) return s;
       const reactions = { ...s.reactions };
-      reactions[emoji] = (reactions[emoji] || 0) + 1;
+      reactions[emoji] = (reactions[emoji] || 0) + (alreadyReacted ? -1 : 1);
+      if (reactions[emoji] <= 0) delete reactions[emoji];
       return { ...s, reactions };
     }));
   }, [storyReactions]);
@@ -540,6 +545,7 @@ export default function DateAndTell() {
       line-height: 1.05; letter-spacing: -0.03em; color: var(--black); margin-bottom: 24px;
     }
     .hero h1 em { color: var(--blue); font-style: italic; }
+    .hero-blue { color: var(--blue); }
     .hero-sub {
       font-family: var(--font); font-size: 18px; color: var(--gray);
       line-height: 1.6; margin-bottom: 36px; font-weight: 400; max-width: 460px;
@@ -1067,20 +1073,20 @@ export default function DateAndTell() {
             <span className="eyebrow-dot" /> New stories drop every Friday
           </div>
           <h1 className={loaded ? "fade-up d1" : ""}>
-            Real dating stories,<br /><em>told anonymously.</em>
+            Real dating stories,<br /><span className="hero-blue">told anonymously.</span>
           </h1>
           <p className={`hero-sub ${loaded ? "fade-up d2" : ""}`}>
-            Funny, cringey, sweet. New stories every Friday. Because dating is better when we're all in on the joke.
+            Bite-sized dating stories, dropping in your inbox every Friday. Coming soon. Because dating is better when we're all in on the joke.
           </p>
           <div className={loaded ? "fade-up d3" : ""}>
             {sub ? (
-              <div className="hero-subbed">✓ You're in! See you Friday!</div>
+              <div className="hero-subbed">✓ You're on the list! We'll let you know when we launch.</div>
             ) : (
               <div className="hero-email">
                 <input className="hero-input" placeholder="name@email.com" value={email}
                   onChange={e => setEmail(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
-                <button className="hero-btn" onClick={handleSubscribe}>Subscribe <Arrow /></button>
+                <button className="hero-btn" onClick={handleSubscribe}>Join waitlist <Arrow /></button>
               </div>
             )}
           </div>
@@ -1113,7 +1119,7 @@ export default function DateAndTell() {
         <div className="submit-inner">
           <div>
             <h2 className="submit-title">Got a story?</h2>
-            <p className="submit-sub">Funny, cringey, sweet, we want it all. Your worst date is someone's best Friday read. Write as much as you want, our AI anonymizes and condenses every story.</p>
+            <p className="submit-sub">Chaotic, wholesome, unhinged, we want it all. Your worst date is someone's best Friday read. Write as much as you want, our AI anonymizes and condenses every story.</p>
           </div>
           <div>
             <div className="submit-form-area">
@@ -1152,7 +1158,7 @@ export default function DateAndTell() {
         <div className="how-inner">
           <div className="how-title">How it works</div>
           <div className="how-grid">
-            <div className="how-card"><div className="how-num">01</div><h3>Tell your story</h3><p>Submit your anonymous dating story. Funny, cringey, sweet, we want it all. No names, no judgment.</p></div>
+            <div className="how-card"><div className="how-num">01</div><h3>Tell your story</h3><p>Submit your anonymous dating story. Chaotic, wholesome, unhinged, we want it all. No names, no judgment.</p></div>
             <div className="how-card"><div className="how-num">02</div><h3>We give it a glow-up</h3><p>Our AI polishes your story while keeping your voice. All identifying details are removed automatically.</p></div>
             <div className="how-card"><div className="how-num">03</div><h3>Friday drop</h3><p>Every Friday, the best stories go live on the site and land in your inbox. Fresh stories, weekly.</p></div>
           </div>
@@ -1162,11 +1168,11 @@ export default function DateAndTell() {
       {/* CTA */}
       <div className="cta-section">
         <div className="cta-title">Your inbox deserves better stories.</div>
-        <p className="cta-sub">Every Friday, real stories from real people navigating the beautiful mess of modern dating. Love, Anonymous.</p>
+        <p className="cta-sub">Bite-sized dating stories from real people, dropping every Friday. Coming soon. Love, Anonymous.</p>
         <div className="cta-email">
           <input className="cta-input" placeholder="name@email.com" value={email} onChange={e => setEmail(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
-          <button className="cta-btn" onClick={handleSubscribe}>{sub ? "Subscribed ✓" : "Subscribe"}</button>
+          <button className="cta-btn" onClick={handleSubscribe}>{sub ? "You're on the list ✓" : "Join waitlist"}</button>
         </div>
       </div>
       </>)}
@@ -1219,14 +1225,14 @@ export default function DateAndTell() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="#2563EB" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </div>
           <h1>Get stories every <em>Friday</em></h1>
-          <p className="subscribe-page-sub">The funniest, cringiest, and cutest anonymous dating stories, curated and delivered to your inbox weekly.</p>
+          <p className="subscribe-page-sub">The funniest, cringiest, and cutest anonymous dating stories, curated and delivered to your inbox weekly. Coming soon.</p>
           {sub ? (
-            <div className="hero-subbed" style={{ justifyContent: "center", marginBottom: 16 }}>✓ You're in! See you Friday!</div>
+            <div className="hero-subbed" style={{ justifyContent: "center", marginBottom: 16 }}>✓ You're on the list! We'll let you know when we launch.</div>
           ) : (<>
             <input className="subscribe-page-input" placeholder="name@email.com" value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
-            <button className="subscribe-page-btn" onClick={handleSubscribe}>Subscribe (it's free)</button>
+            <button className="subscribe-page-btn" onClick={handleSubscribe}>Join waitlist (it's free)</button>
           </>)}
           <p className="subscribe-page-fine">No spam, ever. Unsubscribe anytime.</p>
         </div>
