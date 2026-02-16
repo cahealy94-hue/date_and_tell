@@ -400,28 +400,18 @@ export default function DateAndTell() {
       });
       const data = await res.json();
       if (!res.ok || data.error) {
-        setAuthError(data.error || "Signup failed");
+        if (data.error === "already_exists") {
+          setAuthError("already_exists");
+        } else {
+          setAuthError(data.error || "Signup failed");
+        }
       } else if (data.user && data.session) {
         const authData = { user: data.user, access_token: data.session.access_token, refresh_token: data.session.refresh_token };
         storeAuth(authData);
         setAuthUser(authData);
         await linkStoriesAndGo(data.user.id);
-      } else if (data.user) {
-        // No session returned — auto-login with same credentials
-        const loginRes = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: authEmail, password: authPassword }),
-        });
-        const loginData = await loginRes.json();
-        if (loginRes.ok && loginData.user) {
-          const authData = { user: loginData.user, access_token: loginData.access_token, refresh_token: loginData.refresh_token };
-          storeAuth(authData);
-          setAuthUser(authData);
-          await linkStoriesAndGo(loginData.user.id);
-        } else {
-          setAuthError("Account created! Please log in to continue.");
-        }
+      } else {
+        setAuthError("Something went wrong. Please try again.");
       }
     } catch (err) {
       setAuthError("Something went wrong. Please try again.");
@@ -566,6 +556,18 @@ export default function DateAndTell() {
     } catch (err) { console.error("Edit error:", err); }
     setSavingEdit(false);
   }, [editedText, submitResult]);
+
+  const renderAuthError = () => {
+    if (!authError) return null;
+    if (authError === "already_exists") {
+      return (
+        <div className="auth-error">
+          An account with this email already exists. <span className="auth-switch-link" onClick={() => setPage("login")}>Log in instead</span>
+        </div>
+      );
+    }
+    return <div className="auth-error">{authError}</div>;
+  };
 
   const startEditSubmission = () => {
     if (submitResult?.story) {
@@ -980,8 +982,8 @@ export default function DateAndTell() {
     .post-submit-signup .auth-input { background: white; border: 2px solid var(--border); }
     .post-submit-signup .auth-switch { margin-top: 4px; }
 
-    .submit-another-btn { width: 100%; margin-top: 20px; padding: 16px; background: white; border: 2px solid var(--border); border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 700; color: var(--black); cursor: pointer; transition: all 0.2s; }
-    .submit-another-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-pale); }
+    .submit-another-btn { width: 100%; margin-top: 20px; padding: 16px; background: var(--black); border: none; border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; }
+    .submit-another-btn:hover { background: #1E293B; }
     .submit-page-result { margin-top: 16px; padding: 16px; border-radius: 12px; font-family: var(--font); font-size: 14px; line-height: 1.5; }
     .submit-page-result.approved { background: #DCFCE7; color: #166534; }
     .submit-page-result.rejected { background: #FEF2F2; color: #991B1B; }
@@ -1217,7 +1219,7 @@ export default function DateAndTell() {
                       <div className="post-submit-signup-title">Save your story to your account</div>
                       <div className="post-submit-signup-sub">Create a free account to track reactions, shares, and more.</div>
                     </div>
-                    {authError && <div className="auth-error">{authError}</div>}
+                    {renderAuthError()}
                     <label className="auth-label">Email</label>
                     <input className="auth-input" type="email" placeholder="name@email.com"
                       value={authEmail} onChange={e => setAuthEmail(e.target.value)}
@@ -1379,7 +1381,7 @@ export default function DateAndTell() {
                       <div className="post-submit-signup-sub">Create a free account to track reactions, shares, and more.</div>
                     </div>
 
-                    {authError && <div className="auth-error">{authError}</div>}
+                    {renderAuthError()}
 
                     <label className="auth-label">Email</label>
                     <input className="auth-input" type="email" placeholder="name@email.com"
@@ -1419,7 +1421,7 @@ export default function DateAndTell() {
             <div className="auth-title">Welcome back</div>
             <div className="auth-subtitle">Log in to track your stories and see how people react.</div>
 
-            {authError && <div className="auth-error">{authError}</div>}
+            {renderAuthError()}
 
             <label className="auth-label">Email</label>
             <input className="auth-input" type="email" placeholder="name@email.com"
@@ -1449,7 +1451,7 @@ export default function DateAndTell() {
             <div className="auth-title">Create your account</div>
             <div className="auth-subtitle">Track your stories, see reactions, and know when you go live.</div>
 
-            {authError && <div className="auth-error">{authError}</div>}
+            {renderAuthError()}
 
             <label className="auth-label">Email</label>
             <input className="auth-input" type="email" placeholder="name@email.com"
