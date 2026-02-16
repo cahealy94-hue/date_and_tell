@@ -360,6 +360,7 @@ export default function AdminPage() {
 
                     {filter === "approved" && (<>
                       <button className="btn btn-queue" onClick={() => updateStatus(story.id, "queued")} disabled={actionLoading === story.id}>{actionLoading === story.id ? "..." : "Add to queue"}</button>
+                      <button className="btn btn-publish" onClick={() => updateStatus(story.id, "published")} disabled={actionLoading === story.id}>{actionLoading === story.id ? "..." : "Publish now"}</button>
                       <button className="btn btn-reject" onClick={() => updateStatus(story.id, "rejected")} disabled={actionLoading === story.id}>Reject</button>
                     </>)}
 
