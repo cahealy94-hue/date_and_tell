@@ -1190,17 +1190,52 @@ export default function DateAndTell() {
             <p className="submit-sub">Chaotic, wholesome, unhinged, we want it all. Your worst date is someone's best Friday read. Write as much as you want, our AI anonymizes and condenses every story.</p>
           </div>
           <div>
-            <div className="submit-form-area">
-              <textarea className="submit-textarea" placeholder="Tell us your funniest, cringiest, or cutest dating moment…"
-                rows={5} value={storyText} onChange={e => setStoryText(e.target.value)} />
-              <span className={`submit-char-count ${storyText.length > 500 ? "over" : storyText.length > 400 ? "warn" : ""}`}>{storyText.length}/500</span>
-            </div>
-            <div className="submit-row">
-              <button className="submit-btn" onClick={handleSubmitStory} disabled={!storyText.trim() || submitting}>
-                {submitting ? <><span className="spinner" /> Processing...</> : <>Submit story <Arrow /></>}
-              </button>
-            </div>
-            {renderSubmissionPreview()}
+            {!submitResult ? (
+              <>
+                <div className="submit-form-area">
+                  <textarea className="submit-textarea" placeholder="Tell us your funniest, cringiest, or cutest dating moment…"
+                    rows={5} value={storyText} onChange={e => setStoryText(e.target.value)} />
+                  <span className={`submit-char-count ${storyText.length > 500 ? "over" : storyText.length > 400 ? "warn" : ""}`}>{storyText.length}/500</span>
+                </div>
+                <div className="submit-row">
+                  <button className="submit-btn" onClick={handleSubmitStory} disabled={!storyText.trim() || submitting}>
+                    {submitting ? <><span className="spinner" /> Processing...</> : <>Submit story <Arrow /></>}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {renderSubmissionPreview()}
+
+                {!authUser && submitResult.type === "approved" && (
+                  <div className="post-submit-signup">
+                    <div className="post-submit-signup-header">
+                      <div className="post-submit-signup-title">Save your story to your account</div>
+                      <div className="post-submit-signup-sub">Create a free account to track reactions, shares, and more.</div>
+                    </div>
+                    {authError && <div className="auth-error">{authError}</div>}
+                    <label className="auth-label">Email</label>
+                    <input className="auth-input" type="email" placeholder="name@email.com"
+                      value={authEmail} onChange={e => setAuthEmail(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" && authEmail && authPassword) handleSignup(); }} />
+                    <label className="auth-label">Password</label>
+                    <input className="auth-input" type="password" placeholder="At least 6 characters"
+                      value={authPassword} onChange={e => setAuthPassword(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" && authEmail && authPassword) handleSignup(); }} />
+                    <button className="auth-btn" onClick={handleSignup} disabled={authLoading || !authEmail || !authPassword}>
+                      {authLoading ? <><span className="spinner" /> Creating account...</> : "Create free account"}
+                    </button>
+                    <div className="auth-switch">
+                      Already have an account? <span className="auth-switch-link" onClick={() => setPage("login")}>Log in</span>
+                    </div>
+                  </div>
+                )}
+
+                <button className="submit-another-btn" onClick={() => { setSubmitResult(null); setStoryText(""); setShowSignupPrompt(false); setAuthError(""); }}>
+                  Submit another story
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1350,7 +1385,7 @@ export default function DateAndTell() {
                       onKeyDown={e => { if (e.key === "Enter" && authEmail && authPassword) handleSignup(); }} />
 
                     <button className="auth-btn" onClick={handleSignup} disabled={authLoading || !authEmail || !authPassword}>
-                      {authLoading ? <><span className="spinner" /> Creating account...</> : "Create account"}
+                      {authLoading ? <><span className="spinner" /> Creating account...</> : "Create free account"}
                     </button>
 
                     <div className="auth-switch">
@@ -1373,7 +1408,6 @@ export default function DateAndTell() {
       {page === "login" && (
         <div className="auth-page">
           <div className="auth-card">
-            <div className="auth-logo">Date&Tell</div>
             <div className="auth-title">Welcome back</div>
             <div className="auth-subtitle">Log in to track your stories and see how people react.</div>
 
@@ -1394,7 +1428,7 @@ export default function DateAndTell() {
             </button>
 
             <div className="auth-switch">
-              Don't have an account? <span className="auth-switch-link" onClick={() => setPage("signup")}>Sign up</span>
+              Don't have an account? <span className="auth-switch-link" onClick={() => setPage("signup")}>Sign up</span> to save your stories and track reactions.
             </div>
           </div>
         </div>
@@ -1404,7 +1438,6 @@ export default function DateAndTell() {
       {page === "signup" && (
         <div className="auth-page">
           <div className="auth-card">
-            <div className="auth-logo">Date&Tell</div>
             <div className="auth-title">Create your account</div>
             <div className="auth-subtitle">Track your stories, see reactions, and know when you go live.</div>
 
@@ -1421,7 +1454,7 @@ export default function DateAndTell() {
               onKeyDown={e => { if (e.key === "Enter") handleSignup(); }} />
 
             <button className="auth-btn" onClick={handleSignup} disabled={authLoading || !authEmail || !authPassword}>
-              {authLoading ? <><span className="spinner" /> Creating account...</> : "Create account"}
+              {authLoading ? <><span className="spinner" /> Creating account...</> : "Create free account"}
             </button>
 
             <div className="auth-switch">
@@ -1494,7 +1527,6 @@ export default function DateAndTell() {
         ) : (
           <div className="auth-page">
             <div className="auth-card" style={{ textAlign: "center" }}>
-              <div className="auth-logo">Date&Tell</div>
               <div className="auth-title">Log in to see your stories</div>
               <div className="auth-subtitle">Create an account or log in to track your stories and reactions.</div>
               <button className="auth-btn" onClick={() => setPage("login")}>Log in</button>
