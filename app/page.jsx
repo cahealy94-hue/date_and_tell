@@ -636,12 +636,16 @@ export default function DateAndTell() {
   }, []);
 
   const handleSaveStory = useCallback((storyId) => {
+    if (!authUser) {
+      setPage("signup");
+      return;
+    }
     setSavedStories(prev => {
       const updated = prev.includes(storyId) ? prev.filter(id => id !== storyId) : [...prev, storyId];
       try { localStorage.setItem("dt_saved_stories", JSON.stringify(updated)); } catch {}
       return updated;
     });
-  }, []);
+  }, [authUser]);
 
   const handleSaveEdit = useCallback(async () => {
     if (!editedText.trim() || !submitResult?.storyId) return;
