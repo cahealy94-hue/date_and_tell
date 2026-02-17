@@ -299,6 +299,7 @@ export default function DateAndTell() {
   const [showSignupPrompt, setShowSignupPrompt] = useState(false);
   const [dashboardStories, setDashboardStories] = useState([]);
   const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [dashFilter, setDashFilter] = useState("all");
 
   // Load auth on mount
   useEffect(() => {
@@ -895,9 +896,15 @@ export default function DateAndTell() {
     .dash-reaction-pill { display: flex; align-items: center; gap: 4px; padding: 6px 12px; background: var(--blue-pale); border-radius: 100px; font-size: 14px; }
     .dash-reaction-count { font-family: var(--font); font-size: 13px; font-weight: 700; color: var(--black); }
     .dash-reaction-total { font-family: var(--font); font-size: 12px; color: var(--gray-light); font-weight: 500; margin-left: 4px; }
-    .dash-share-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; margin-top: 12px; background: var(--blue-pale); border: 1.5px solid var(--blue-light); border-radius: 12px; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--blue); cursor: pointer; transition: all 0.2s; }
-    .dash-share-btn:hover { background: var(--blue-light); border-color: var(--blue); }
-    .dash-share-btn svg { width: 16px; height: 16px; stroke: var(--blue); }
+    .dash-share-link { display: flex; align-items: center; gap: 4px; color: var(--blue); font-weight: 600; cursor: pointer; margin-left: auto; transition: opacity 0.2s; }
+    .dash-share-link:hover { opacity: 0.7; }
+    .dash-share-link svg { width: 14px; height: 14px; stroke: var(--blue); }
+    .dash-filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .dash-filter { font-family: var(--font); font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 100px; border: 1.5px solid var(--border); background: white; color: var(--gray); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .dash-filter:hover { border-color: var(--blue-light); color: var(--black); }
+    .dash-filter.active { background: var(--black); color: white; border-color: var(--black); }
+    .dash-filter-count { font-size: 11px; font-weight: 700; background: rgba(0,0,0,0.08); padding: 2px 7px; border-radius: 100px; }
+    .dash-filter.active .dash-filter-count { background: rgba(255,255,255,0.2); }
     .dash-empty { text-align: center; padding: 60px 20px; }
     .dash-empty-icon { font-size: 40px; margin-bottom: 12px; }
     .dash-empty-title { font-family: var(--font); font-size: 20px; font-weight: 700; color: var(--black); margin-bottom: 8px; }
@@ -1086,6 +1093,8 @@ export default function DateAndTell() {
       .dash-page { padding: 32px 20px 64px; }
       .dash-header { flex-direction: column; gap: 12px; align-items: flex-start; }
       .dash-stats { grid-template-columns: 1fr; }
+      .dash-filters { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+      .dash-filter { white-space: nowrap; flex-shrink: 0; }
       .dash-title { font-size: 28px; }
     }
 
@@ -1509,7 +1518,16 @@ export default function DateAndTell() {
             </div>
 
             <div className="dash-section-title">Your stories</div>
-            <div className="rainbow-accent" style={{ marginBottom: 20 }} />
+            <div className="rainbow-accent" style={{ marginBottom: 12 }} />
+
+            <div className="dash-filters">
+              {["all", "published", "pending", "approved", "rejected"].map(f => (
+                <button key={f} className={`dash-filter ${dashFilter === f ? "active" : ""}`} onClick={() => setDashFilter(f)}>
+                  {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
+                  <span className="dash-filter-count">{f === "all" ? dashboardStories.length : dashboardStories.filter(s => s.status === f).length}</span>
+                </button>
+              ))}
+            </div>
 
             {dashboardLoading ? (
               <div className="dash-loading"><span className="spinner" style={{ borderColor: "rgba(0,0,0,0.1)", borderTopColor: "var(--blue)", width: 24, height: 24 }} /></div>
@@ -1521,7 +1539,14 @@ export default function DateAndTell() {
                 <button className="dash-empty-btn" onClick={() => setPage("submit")}>Share a story</button>
               </div>
             ) : (
-              dashboardStories.map(s => {
+              (() => {
+                const filtered = dashFilter === "all" ? dashboardStories : dashboardStories.filter(s => s.status === dashFilter);
+                return filtered.length === 0 ? (
+                  <div className="dash-empty" style={{ padding: "40px 20px" }}>
+                    <div className="dash-empty-title">No {dashFilter} stories</div>
+                    <div className="dash-empty-sub">Stories will appear here once they're {dashFilter}.</div>
+                  </div>
+                ) : filtered.map(s => {
                 const statusStyle = getStatusColor(s.status);
                 const totalReactions = getTotalReactions(s.reactions);
                 const isPublished = s.status === "published";
@@ -1552,32 +1577,32 @@ export default function DateAndTell() {
                       {!isPublished && <span>📊 {totalReactions} reaction{totalReactions !== 1 ? "s" : ""}</span>}
                       <span>🏷️ {s.theme}</span>
                       <span>📅 {s.submitted_at ? new Date(s.submitted_at).toLocaleDateString() : "—"}</span>
+                      {isPublished && (
+                        <span className="dash-share-link" onClick={async (e) => {
+                          const shareText = `"${s.title}" — ${s.rewritten_text}\n\n— ${s.author_persona} on Date & Tell`;
+                          const shareUrl = "https://dateandtell.com";
+                          const el = e.currentTarget;
+                          try {
+                            if (navigator.share) {
+                              await navigator.share({ title: s.title, text: shareText, url: shareUrl });
+                              return;
+                            }
+                            if (navigator.clipboard) {
+                              await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+                              const origText = el.textContent;
+                              el.textContent = "Copied!";
+                              setTimeout(() => { el.textContent = origText; }, 1500);
+                            }
+                          } catch {}
+                        }}>
+                          <ShareIcon /> Share
+                        </span>
+                      )}
                     </div>
-
-                    {isPublished && (
-                      <button className="dash-share-btn" onClick={async (e) => {
-                        const shareText = `"${s.title}" — ${s.rewritten_text}\n\n— ${s.author_persona} on Date & Tell`;
-                        const shareUrl = "https://dateandtell.com";
-                        try {
-                          if (navigator.share) {
-                            await navigator.share({ title: s.title, text: shareText, url: shareUrl });
-                            return;
-                          }
-                          if (navigator.clipboard) {
-                            await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-                            const btn = e.currentTarget;
-                            const orig = btn.innerHTML;
-                            btn.textContent = "Copied to clipboard!";
-                            setTimeout(() => { btn.innerHTML = orig; }, 1500);
-                          }
-                        } catch {}
-                      }}>
-                        <ShareIcon /> Share this story
-                      </button>
-                    )}
                   </div>
                 );
               })
+              })()
             )}
           </div>
         ) : (
