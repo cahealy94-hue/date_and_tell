@@ -387,9 +387,10 @@ export default function DateAndTell() {
     if (page !== "dashboard" || !authUser) return;
     // Show welcome popup on first visit
     try {
-      if (!localStorage.getItem("dt_dash_welcomed")) {
+      const welcomeKey = `dt_dash_welcomed_${authUser.user.id}`;
+      if (!localStorage.getItem(welcomeKey)) {
         setShowDashWelcome(true);
-        localStorage.setItem("dt_dash_welcomed", "1");
+        localStorage.setItem(welcomeKey, "1");
       }
     } catch {}
     async function fetchMyStories() {
@@ -804,6 +805,8 @@ export default function DateAndTell() {
     .nav-link:hover { color: var(--black); }
     .nav-user-btn { font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--gray); cursor: pointer; display: flex; align-items: center; gap: 6px; background: none; border: 1.5px solid var(--border); padding: 8px 16px; border-radius: 10px; transition: all 0.2s; }
     .nav-user-btn:hover { border-color: var(--blue-light); color: var(--black); }
+    .nav-signup { font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--blue); background: none; padding: 10px 22px; border-radius: 14px; border: 2px solid var(--blue); cursor: pointer; transition: all 0.2s; }
+    .nav-signup:hover { background: var(--blue); color: white; }
     .nav-share { font-family: var(--font); font-size: 14px; font-weight: 600; color: white; background: var(--black); padding: 12px 24px; border-radius: 14px; border: none; cursor: pointer; transition: all 0.2s; }
     .nav-share:hover { background: #1E293B; }
     .nav-hamburger { display: none; background: none; border: none; color: var(--black); cursor: pointer; padding: 4px; }
@@ -1129,6 +1132,7 @@ export default function DateAndTell() {
       .nav { padding: 16px 20px; }
       .nav-link { display: none; }
       .nav-share { display: none; }
+      .nav-signup { display: none; }
       .nav-user-btn { display: none; }
       .nav-hamburger { display: block; }
       .mobile-menu { display: flex; flex-direction: column; padding: 8px 20px 16px; border-top: 1px solid var(--border); position: absolute; top: 100%; left: 0; right: 0; background: white; z-index: 999; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
@@ -1246,11 +1250,10 @@ export default function DateAndTell() {
           </div>
           <div className="nav-right">
             <span className="nav-link" onClick={() => setPage("library")}>Story library</span>
-            <span className="nav-link" onClick={() => setPage("subscribe")}>Subscribe</span>
             {authUser ? (
               <button className="nav-user-btn" onClick={() => setPage("dashboard")}><UserIcon /> My stories</button>
             ) : (
-              <span className="nav-link" onClick={() => setPage("login")}>Log in</span>
+              <button className="nav-signup" onClick={() => setPage("signup")}>Sign up</button>
             )}
             <button className="nav-share" onClick={() => setPage("submit")}>Share your story</button>
             <button className="nav-hamburger" onClick={() => setMobileMenu(!mobileMenu)}>
@@ -1263,11 +1266,10 @@ export default function DateAndTell() {
         {mobileMenu && (
           <div className="mobile-menu">
             <button className="mobile-menu-item" onClick={() => setPage("library")}>Story library</button>
-            <button className="mobile-menu-item" onClick={() => setPage("subscribe")}>Subscribe</button>
             {authUser ? (
               <button className="mobile-menu-item" onClick={() => setPage("dashboard")}>My stories</button>
             ) : (
-              <button className="mobile-menu-item" onClick={() => setPage("login")}>Log in</button>
+              <button className="mobile-menu-item" onClick={() => setPage("signup")}>Sign up</button>
             )}
             <button className="mobile-menu-item primary" onClick={() => setPage("submit")}>Share your story</button>
           </div>
@@ -1823,6 +1825,38 @@ export default function DateAndTell() {
                 );
               })
               })()
+            )}
+
+            {/* Saved Stories Section */}
+            {savedStories.length > 0 && (
+              <>
+                <div className="dash-section-title" style={{ marginTop: 40 }}>Saved stories</div>
+                <div className="rainbow-accent" style={{ marginBottom: 20 }} />
+                {stories.filter(s => savedStories.includes(s.id)).map(s => (
+                  <div key={s.id} className="dash-story">
+                    <div className="dash-story-top">
+                      <div className="dash-story-title">{s.title}</div>
+                      <span className="dash-story-status" style={{ background: "#FFFBEB", color: "#D97706" }}>
+                        <StarIcon filled /> saved
+                      </span>
+                    </div>
+                    <div className="dash-story-text">{s.text}</div>
+                    <div className="dash-story-meta">
+                      <span>🏷️ {s.theme}</span>
+                      <span>— {s.author}</span>
+                      <span className="dash-share-link" onClick={() => handleSaveStory(s.id)} style={{ color: "#DC2626" }}>
+                        Remove
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {stories.filter(s => savedStories.includes(s.id)).length === 0 && (
+                  <div className="dash-empty" style={{ padding: "30px 20px" }}>
+                    <div className="dash-empty-title">Stories you saved are no longer available</div>
+                    <div className="dash-empty-sub">Browse the <span className="auth-switch-link" onClick={() => setPage("library")}>Story library</span> to find more.</div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : (
