@@ -300,6 +300,7 @@ export default function DateAndTell() {
   const [dashboardStories, setDashboardStories] = useState([]);
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashFilter, setDashFilter] = useState("all");
+  const [showDashWelcome, setShowDashWelcome] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetToken, setResetToken] = useState(null);
   const [resetSuccess, setResetSuccess] = useState(false);
@@ -373,6 +374,13 @@ export default function DateAndTell() {
   // Fetch dashboard stories when on dashboard
   useEffect(() => {
     if (page !== "dashboard" || !authUser) return;
+    // Show welcome popup on first visit
+    try {
+      if (!localStorage.getItem("dt_dash_welcomed")) {
+        setShowDashWelcome(true);
+        localStorage.setItem("dt_dash_welcomed", "1");
+      }
+    } catch {}
     async function fetchMyStories() {
       setDashboardLoading(true);
       try {
@@ -782,6 +790,7 @@ export default function DateAndTell() {
     .hero-btn { padding: 16px 32px; background: var(--blue); color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font); white-space: nowrap; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
     .hero-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
     .hero-subbed { display: flex; align-items: center; gap: 10px; padding: 16px 24px; background: var(--blue-pale); border-radius: 14px; font-size: 15px; font-weight: 600; color: var(--blue-dark); font-family: var(--font); }
+    .hero-subbed-success { padding: 16px 24px; background: #DCFCE7; border-radius: 14px; font-size: 15px; font-weight: 600; color: #166534; font-family: var(--font); line-height: 1.5; }
 
     /* ── Floating cards ── */
     .hero-cards { position: relative; height: 520px; }
@@ -978,6 +987,11 @@ export default function DateAndTell() {
     .dash-empty-btn { padding: 14px 28px; background: var(--blue); color: white; border: none; border-radius: 12px; font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; }
     .dash-empty-btn:hover { background: var(--blue-dark); }
     .dash-loading { text-align: center; padding: 60px; font-family: var(--font); color: var(--gray); }
+    .dash-welcome-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 24px; }
+    .dash-welcome { background: white; border-radius: 20px; padding: 40px 32px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .dash-welcome-emoji { font-size: 48px; margin-bottom: 16px; }
+    .dash-welcome-title { font-family: var(--font); font-size: 22px; font-weight: 700; color: var(--black); margin-bottom: 12px; }
+    .dash-welcome-text { font-family: var(--font); font-size: 14px; color: var(--gray); line-height: 1.6; margin-bottom: 24px; }
 
     /* ── How it works ── */
     .how-section { background: var(--blue); padding: 80px 48px; }
@@ -1225,17 +1239,17 @@ export default function DateAndTell() {
       <section className="hero">
         <div>
           <div className={`hero-eyebrow ${loaded ? "fade-up d1" : ""}`}>
-            <span className="eyebrow-dot" /> New stories drop every Friday
+            <span className="eyebrow-dot" /> Launching soon — join the waitlist
           </div>
           <h1 className={loaded ? "fade-up d1" : ""}>
             Real dating stories,<br /><span className="hero-blue">told anonymously.</span>
           </h1>
           <p className={`hero-sub ${loaded ? "fade-up d2" : ""}`}>
-            Bite-sized dating stories, dropping in your inbox every Friday. Coming soon. Because dating is better when we're all in on the joke.
+            Bite-sized dating stories, dropping in your inbox every Friday. Because dating is better when we're all in on the joke.
           </p>
           <div className={loaded ? "fade-up d3" : ""}>
             {sub ? (
-              <div className="hero-subbed">✓ You're on the list! We'll let you know when we launch.</div>
+              <div className="hero-subbed-success">You've joined the waitlist! You'll be the first to know when our first Friday drop goes live.</div>
             ) : (
               <div className="hero-email">
                 <input className="hero-input" placeholder="name@email.com" value={email}
@@ -1269,7 +1283,7 @@ export default function DateAndTell() {
       </section>
 
       <div className="home-sections">
-      <div className="submit-section home-submit">
+      <div className="submit-section home-submit" id="home-submit">
         <div className="submit-inner">
           <div>
             <h2 className="submit-title">Got a story?</h2>
@@ -1285,7 +1299,7 @@ export default function DateAndTell() {
                 </div>
                 <div className="submit-row">
                   <button className="submit-btn" onClick={handleSubmitStory} disabled={!storyText.trim() || submitting}>
-                    {submitting ? <><span className="spinner" /> Processing...</> : <>Submit story <Arrow /></>}
+                    {submitting ? <><span className="spinner" /> Our AI is polishing your story...</> : <>Submit story <Arrow /></>}
                   </button>
                 </div>
               </>
@@ -1320,7 +1334,7 @@ export default function DateAndTell() {
                   </div>
                 )}
 
-                <button className="submit-another-btn" onClick={() => { setSubmitResult(null); setStoryText(""); setShowSignupPrompt(false); setAuthError(""); }}>
+                <button className="submit-another-btn" onClick={() => { setSubmitResult(null); setStoryText(""); setShowSignupPrompt(false); setAuthError(""); setTimeout(() => { document.getElementById("home-submit")?.scrollIntoView({ behavior: "smooth" }); }, 50); }}>
                   Submit another story
                 </button>
               </>
@@ -1358,12 +1372,16 @@ export default function DateAndTell() {
 
       <div className="cta-section">
         <div className="cta-title">Your inbox deserves better stories.</div>
-        <p className="cta-sub">Bite-sized dating stories from real people, dropping every Friday. Coming soon. Love, Anonymous.</p>
-        <div className="cta-email">
-          <input className="cta-input" placeholder="name@email.com" value={email} onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
-          <button className="cta-btn" onClick={handleSubscribe}>{sub ? "You're on the list ✓" : "Join waitlist"}</button>
-        </div>
+        <p className="cta-sub">Bite-sized dating stories from real people, dropping every Friday. Love, Anonymous.</p>
+        {sub ? (
+          <div className="hero-subbed-success" style={{ maxWidth: 480, margin: "0 auto" }}>You've joined the waitlist! You'll be the first to know when our first Friday drop goes live.</div>
+        ) : (
+          <div className="cta-email">
+            <input className="cta-input" placeholder="name@email.com" value={email} onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
+            <button className="cta-btn" onClick={handleSubscribe}>Join waitlist</button>
+          </div>
+        )}
       </div>
       </>)}
 
@@ -1415,9 +1433,9 @@ export default function DateAndTell() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="#2563EB" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </div>
           <h1>Get stories every <em>Friday</em></h1>
-          <p className="subscribe-page-sub">The funniest, cringiest, and cutest anonymous dating stories, curated and delivered to your inbox weekly. Coming soon.</p>
+          <p className="subscribe-page-sub">The funniest, cringiest, and cutest anonymous dating stories, curated and delivered to your inbox weekly.</p>
           {sub ? (
-            <div className="hero-subbed" style={{ justifyContent: "center", marginBottom: 16 }}>✓ You're on the list! We'll let you know when we launch.</div>
+            <div className="hero-subbed-success" style={{ marginBottom: 16 }}>You've joined the waitlist! You'll be the first to know when our first Friday drop goes live.</div>
           ) : (<>
             <input className="subscribe-page-input" placeholder="name@email.com" value={email}
               onChange={e => setEmail(e.target.value)}
@@ -1637,6 +1655,17 @@ export default function DateAndTell() {
       {page === "dashboard" && (
         authUser ? (
           <div className="dash-page">
+            {/* Welcome popup */}
+            {showDashWelcome && (
+              <div className="dash-welcome-overlay" onClick={() => setShowDashWelcome(false)}>
+                <div className="dash-welcome" onClick={e => e.stopPropagation()}>
+                  <div className="dash-welcome-emoji">🎉</div>
+                  <div className="dash-welcome-title">Welcome to your stories!</div>
+                  <div className="dash-welcome-text">This is your personal dashboard. Here you can track every story you submit, see how people react to your published stories, and share your favorites.</div>
+                  <button className="auth-btn" onClick={() => setShowDashWelcome(false)}>View my stories</button>
+                </div>
+              </div>
+            )}
             <div className="dash-header">
               <div>
                 <h1 className="dash-title">My stories</h1>
