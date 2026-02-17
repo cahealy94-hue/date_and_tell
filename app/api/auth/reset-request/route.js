@@ -8,17 +8,15 @@ export async function POST(request) {
   }
 
   const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const redirectTo = "https://dateandtell.com/reset-password";
 
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       apikey: SUPABASE_ANON_KEY,
     },
-    body: JSON.stringify({
-      email,
-      gotrue_meta_security: {},
-    }),
+    body: JSON.stringify({ email }),
   });
 
   if (!res.ok) {
