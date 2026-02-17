@@ -1747,7 +1747,7 @@ export default function DateAndTell() {
             <div className="dash-filters">
               {["all", "published", "pending", "saved"].map(f => (
                 <button key={f} className={`dash-filter ${dashFilter === f ? "active" : ""}`} onClick={() => setDashFilter(f)}>
-                  {f === "all" ? "All" : f === "saved" ? "⭐ Saved" : f.charAt(0).toUpperCase() + f.slice(1)}
+                  {f === "all" ? "All" : f === "saved" ? <><StarIcon filled={false} /> Saved</> : f.charAt(0).toUpperCase() + f.slice(1)}
                   <span className="dash-filter-count">{f === "all" ? dashboardStories.length : f === "saved" ? savedStories.length : dashboardStories.filter(s => s.status === f).length}</span>
                 </button>
               ))}
@@ -1760,7 +1760,7 @@ export default function DateAndTell() {
                 const savedList = stories.filter(s => savedStories.includes(s.id));
                 return savedList.length === 0 ? (
                   <div className="dash-empty" style={{ padding: "40px 20px" }}>
-                    <div className="dash-empty-icon">⭐</div>
+                    <div className="dash-empty-icon"><StarIcon filled={false} /></div>
                     <div className="dash-empty-title">No saved stories yet</div>
                     <div className="dash-empty-sub">Browse the <span className="auth-switch-link" onClick={() => setPage("library")}>Story library</span> and save your favorites.</div>
                   </div>
@@ -1768,7 +1768,7 @@ export default function DateAndTell() {
                   <div key={s.id} className="dash-story">
                     <div className="dash-story-top">
                       <div className="dash-story-title">{s.title}</div>
-                      <span className="dash-story-status" style={{ background: "#FFFBEB", color: "#D97706" }}>⭐ saved</span>
+                      <span className="dash-story-status" style={{ background: "#FFFBEB", color: "#D97706" }}><StarIcon filled /> saved</span>
                     </div>
                     <div className="dash-story-text">{s.text}</div>
                     <div className="dash-story-meta">
