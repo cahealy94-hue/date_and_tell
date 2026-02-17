@@ -272,7 +272,9 @@ export default function DateAndTell() {
   };
 
   const [email, setEmail] = useState("");
-  const [sub, setSub] = useState(false);
+  const [heroSub, setHeroSub] = useState(false);
+  const [ctaSub, setCtaSub] = useState(false);
+  const [pageSub, setPageSub] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [storyText, setStoryText] = useState("");
   const [page, setPageState] = useState("home");
@@ -296,6 +298,7 @@ export default function DateAndTell() {
   const [authError, setAuthError] = useState("");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
   const [showSignupPrompt, setShowSignupPrompt] = useState(false);
   const [dashboardStories, setDashboardStories] = useState([]);
   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -422,7 +425,7 @@ export default function DateAndTell() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: authEmail, password: authPassword }),
+        body: JSON.stringify({ email: authEmail, password: authPassword, name: authName }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
@@ -443,7 +446,7 @@ export default function DateAndTell() {
       setAuthError("Something went wrong. Please try again.");
     }
     setAuthLoading(false);
-  }, [authEmail, authPassword]);
+  }, [authEmail, authPassword, authName]);
 
   const handleLogin = useCallback(async () => {
     if (!authEmail || !authPassword) return;
@@ -518,9 +521,11 @@ export default function DateAndTell() {
   }, [authPassword, resetToken]);
 
   // ── Handlers ──
-  const handleSubscribe = useCallback(async () => {
+  const handleSubscribe = useCallback(async (source) => {
     if (!email.includes("@")) return;
-    setSub(true);
+    if (source === "hero") setHeroSub(true);
+    else if (source === "cta") setCtaSub(true);
+    else if (source === "page") setPageSub(true);
     try {
       await fetch("/api/subscribe", {
         method: "POST",
@@ -558,6 +563,11 @@ export default function DateAndTell() {
         if (!authUser && result.storyId) {
           addUnlinkedStoryId(result.storyId);
           setShowSignupPrompt(true);
+          // Scroll to signup section after render
+          setTimeout(() => {
+            const el = document.getElementById("post-submit-signup");
+            if (el) { const y = el.getBoundingClientRect().top + window.pageYOffset - 80; window.scrollTo({ top: y, behavior: "smooth" }); }
+          }, 300);
         }
       }
     } catch (err) {
@@ -1248,14 +1258,14 @@ export default function DateAndTell() {
             Bite-sized dating stories, dropping in your inbox every Friday. Because dating is better when we're all in on the joke.
           </p>
           <div className={loaded ? "fade-up d3" : ""}>
-            {sub ? (
+            {heroSub ? (
               <div className="hero-subbed-success">✓ You've joined the waitlist! You'll be the first to know when our first Friday drop goes live.</div>
             ) : (
               <div className="hero-email">
                 <input className="hero-input" placeholder="name@email.com" value={email}
                   onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
-                <button className="hero-btn" onClick={handleSubscribe}>Join waitlist <Arrow /></button>
+                  onKeyDown={e => { if (e.key === "Enter") handleSubscribe("hero"); }} />
+                <button className="hero-btn" onClick={() => handleSubscribe("hero")}>Join waitlist <Arrow /></button>
               </div>
             )}
           </div>
@@ -1308,7 +1318,7 @@ export default function DateAndTell() {
                 {renderSubmissionPreview()}
 
                 {!authUser && submitResult.type === "approved" && (
-                  <div className="post-submit-signup">
+                  <div className="post-submit-signup" id="post-submit-signup">
                     <div className="post-submit-signup-rainbow" />
                     <div className="post-submit-signup-inner">
                     <div className="post-submit-signup-header">
@@ -1316,6 +1326,9 @@ export default function DateAndTell() {
                       <div className="post-submit-signup-sub">Create a free account to track reactions, shares, and more.</div>
                     </div>
                     {renderAuthError()}
+                    <label className="auth-label">Name</label>
+                    <input className="auth-input" type="text" placeholder="Your first name"
+                      value={authName} onChange={e => setAuthName(e.target.value)} />
                     <label className="auth-label">Email</label>
                     <input className="auth-input" type="email" placeholder="name@email.com"
                       value={authEmail} onChange={e => setAuthEmail(e.target.value)}
@@ -1373,13 +1386,13 @@ export default function DateAndTell() {
       <div className="cta-section">
         <div className="cta-title">Your inbox deserves better stories.</div>
         <p className="cta-sub">Bite-sized dating stories from real people, dropping every Friday. Love, Anonymous.</p>
-        {sub ? (
+        {ctaSub ? (
           <div className="hero-subbed-success" style={{ maxWidth: 480, margin: "0 auto" }}>✓ You've joined the waitlist! You'll be the first to know when our first Friday drop goes live.</div>
         ) : (
           <div className="cta-email">
             <input className="cta-input" placeholder="name@email.com" value={email} onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
-            <button className="cta-btn" onClick={handleSubscribe}>Join waitlist</button>
+              onKeyDown={e => { if (e.key === "Enter") handleSubscribe("cta"); }} />
+            <button className="cta-btn" onClick={() => handleSubscribe("cta")}>Join waitlist</button>
           </div>
         )}
       </div>
@@ -1434,13 +1447,13 @@ export default function DateAndTell() {
           </div>
           <h1>Get stories every <em>Friday</em></h1>
           <p className="subscribe-page-sub">The funniest, cringiest, and cutest anonymous dating stories, curated and delivered to your inbox weekly.</p>
-          {sub ? (
+          {pageSub ? (
             <div className="hero-subbed-success" style={{ marginBottom: 16 }}>✓ You've joined the waitlist! You'll be the first to know when our first Friday drop goes live.</div>
           ) : (<>
             <input className="subscribe-page-input" placeholder="name@email.com" value={email}
               onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") handleSubscribe(); }} />
-            <button className="subscribe-page-btn" onClick={handleSubscribe}>Join waitlist (it's free)</button>
+              onKeyDown={e => { if (e.key === "Enter") handleSubscribe("page"); }} />
+            <button className="subscribe-page-btn" onClick={() => handleSubscribe("page")}>Join waitlist (it's free)</button>
           </>)}
           <p className="subscribe-page-fine">No spam, ever. Unsubscribe anytime.</p>
         </div>
@@ -1473,7 +1486,7 @@ export default function DateAndTell() {
 
                 {/* Inline signup after submission (only if not logged in) */}
                 {!authUser && submitResult.type === "approved" && (
-                  <div className="post-submit-signup">
+                  <div className="post-submit-signup" id="post-submit-signup">
                     <div className="post-submit-signup-rainbow" />
                     <div className="post-submit-signup-inner">
                     <div className="post-submit-signup-header">
@@ -1482,6 +1495,10 @@ export default function DateAndTell() {
                     </div>
 
                     {renderAuthError()}
+
+                    <label className="auth-label">Name</label>
+                    <input className="auth-input" type="text" placeholder="Your first name"
+                      value={authName} onChange={e => setAuthName(e.target.value)} />
 
                     <label className="auth-label">Email</label>
                     <input className="auth-input" type="email" placeholder="name@email.com"
@@ -1554,6 +1571,10 @@ export default function DateAndTell() {
             <div className="auth-subtitle">Track your stories, see reactions, and know when you go live.</div>
 
             {renderAuthError()}
+
+            <label className="auth-label">Name</label>
+            <input className="auth-input" type="text" placeholder="Your first name"
+              value={authName} onChange={e => setAuthName(e.target.value)} />
 
             <label className="auth-label">Email</label>
             <input className="auth-input" type="email" placeholder="name@email.com"
