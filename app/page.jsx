@@ -1521,7 +1521,7 @@ export default function DateAndTell() {
             <div className="rainbow-accent" style={{ marginBottom: 12 }} />
 
             <div className="dash-filters">
-              {["all", "published", "pending", "approved", "rejected"].map(f => (
+              {["all", "published", "pending"].map(f => (
                 <button key={f} className={`dash-filter ${dashFilter === f ? "active" : ""}`} onClick={() => setDashFilter(f)}>
                   {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
                   <span className="dash-filter-count">{f === "all" ? dashboardStories.length : dashboardStories.filter(s => s.status === f).length}</span>
@@ -1558,18 +1558,16 @@ export default function DateAndTell() {
                     </div>
                     <div className="dash-story-text">{s.rewritten_text}</div>
 
-                    {isPublished && s.reactions && Object.keys(s.reactions).length > 0 && (
+                    {isPublished && (
                       <div className="dash-story-reactions">
                         {EMOJI_OPTIONS.map(emoji => {
                           const count = s.reactions?.[emoji] || 0;
-                          if (count === 0) return null;
                           return (
                             <span key={emoji} className="dash-reaction-pill">
                               {emoji} <span className="dash-reaction-count">{count}</span>
                             </span>
                           );
                         })}
-                        <span className="dash-reaction-total">{totalReactions} total</span>
                       </div>
                     )}
 
