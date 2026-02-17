@@ -61,6 +61,61 @@ export async function POST(request) {
     return Response.json({ error: "Account created but login failed. Please log in manually." }, { status: 200 });
   }
 
+  // ── Send welcome email via Resend (fire and forget) ──
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (RESEND_API_KEY) {
+    const firstName = name || "there";
+    fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Date&Tell <hello@dateandtell.com>",
+        to: [email],
+        subject: "Welcome to Date&Tell 💌",
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px;">
+            <div style="text-align: center; margin-bottom: 32px;">
+              <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px;">Date&amp;Tell</h1>
+              <p style="font-size: 13px; color: #999; margin: 0; font-style: italic;">Love, Anonymous.</p>
+            </div>
+            <div style="background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF, #9B59B6); height: 3px; border-radius: 2px; margin-bottom: 32px;"></div>
+            <p style="font-size: 18px; color: #1a1a1a; margin: 0 0 16px;">Hey ${firstName} 👋</p>
+            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 16px;">Welcome to Date&amp;Tell! You're all set up.</p>
+            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 16px;">Here's what you can do now:</p>
+            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">📝 <strong>Share a dating story</strong> — anonymous, AI-polished, and totally judgment-free</p>
+            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">📊 <strong>Track your stories</strong> — see reactions, shares, and when you go live</p>
+            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">💌 <strong>Get the Friday drop</strong> — the best stories of the week, straight to your inbox</p>
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="https://dateandtell.com/submit" style="display: inline-block; background: #1a1a1a; color: white; text-decoration: none; padding: 14px 32px; border-radius: 14px; font-size: 16px; font-weight: 600;">Share your first story</a>
+            </div>
+            <p style="font-size: 14px; color: #999; line-height: 1.6; margin: 32px 0 0; text-align: center;">You're getting this because you created a Date&amp;Tell account. We'll also send you the best dating stories every Friday.</p>
+          </div>
+        `,
+      }),
+    }).catch(err => console.error("Resend welcome email error:", err));
+  }
+
+  // ── Add to Beehiiv for Friday newsletter (fire and forget) ──
+  const BEEHIIV_API_KEY = process.env.BEEHIIV_API_KEY;
+  const BEEHIIV_PUBLICATION_ID = process.env.BEEHIIV_PUBLICATION_ID;
+  if (BEEHIIV_API_KEY && BEEHIIV_PUBLICATION_ID) {
+    fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${BEEHIIV_API_KEY}`,
+      },
+      body: JSON.stringify({
+        email,
+        send_welcome_email: false,
+        utm_source: "account_signup",
+      }),
+    }).catch(err => console.error("Beehiiv add subscriber error:", err));
+  }
+
   return Response.json({
     ok: true,
     user: loginData.user,
