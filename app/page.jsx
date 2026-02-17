@@ -307,6 +307,7 @@ export default function DateAndTell() {
   const [authPassword, setAuthPassword] = useState("");
   const [authName, setAuthName] = useState("");
   const [showSignupPrompt, setShowSignupPrompt] = useState(false);
+  const [signupReason, setSignupReason] = useState(null);
   const [dashboardStories, setDashboardStories] = useState([]);
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashFilter, setDashFilter] = useState("all");
@@ -329,6 +330,7 @@ export default function DateAndTell() {
     setAuthEmail("");
     setAuthPassword("");
     setAuthName("");
+    if (p !== "signup") setSignupReason(null);
     const url = p === "home" ? "/" : `/${p}`;
     window.history.pushState({}, "", url);
     window.scrollTo(0, 0);
@@ -637,6 +639,7 @@ export default function DateAndTell() {
 
   const handleSaveStory = useCallback((storyId) => {
     if (!authUser) {
+      setSignupReason("save");
       setPage("signup");
       return;
     }
@@ -1603,7 +1606,7 @@ export default function DateAndTell() {
         <div className="auth-page">
           <div className="auth-card">
             <div className="auth-title">Create your account</div>
-            <div className="auth-subtitle">Track your stories, see reactions, and get the best dating stories in your inbox every Friday.</div>
+            <div className="auth-subtitle">{signupReason === "save" ? "Sign up to save stories to your profile and never lose your favorites." : "Track your stories, see reactions, and get the best dating stories in your inbox every Friday."}</div>
 
             {renderAuthError()}
 
