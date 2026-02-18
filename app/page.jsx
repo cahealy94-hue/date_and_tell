@@ -271,7 +271,7 @@ function StoryCard({ story, onReaction, onReport, onSave, reacted, isSaved }) {
 export default function DateAndTell() {
   const getPageFromPath = () => {
     const path = window.location.pathname.replace(/^\//, "");
-    if (["library", "submit", "subscribe", "login", "signup", "dashboard", "forgot-password", "reset-password"].includes(path)) return path;
+    if (["library", "submit", "subscribe", "login", "signup", "dashboard", "forgot-password", "reset-password", "terms", "privacy"].includes(path)) return path;
     return "home";
   };
 
@@ -1127,12 +1127,29 @@ export default function DateAndTell() {
     .submit-page-result.approved { background: #DCFCE7; color: #166534; }
     .submit-page-result.rejected { background: #FEF2F2; color: #991B1B; }
 
+    /* ── Legal Pages ── */
+    .legal-page { max-width: 720px; margin: 0 auto; padding: 48px 48px 64px; font-family: var(--font); color: var(--black); line-height: 1.7; }
+    .legal-page h1 { font-family: 'League Spartan', var(--font); font-size: 32px; font-weight: 800; margin-bottom: 4px; }
+    .legal-page .legal-date { font-size: 14px; color: var(--gray); margin-bottom: 32px; }
+    .legal-page h2 { font-size: 18px; font-weight: 700; margin-top: 32px; margin-bottom: 12px; }
+    .legal-page h3 { font-size: 16px; font-weight: 600; margin-top: 24px; margin-bottom: 8px; }
+    .legal-page p { font-size: 14px; color: #374151; margin-bottom: 12px; }
+    .legal-page a { color: var(--blue); text-decoration: none; }
+    .legal-page a:hover { text-decoration: underline; }
+
     /* ── Footer ── */
-    .footer { max-width: 1280px; margin: 0 auto; padding: 32px 48px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .footer-logo { font-family: 'League Spartan', var(--font); font-size: 20px; font-weight: 800; color: var(--black); letter-spacing: -0.03em; }
-    .footer-email { font-family: var(--font); font-size: 13px; color: var(--gray); text-decoration: none; transition: color 0.2s; }
-    .footer-email:hover { color: var(--blue); }
-    .footer-copy { font-family: var(--font); font-size: 13px; color: var(--gray-light); }
+    .footer { background: #1a2332; color: #fff; padding: 48px 48px 0; }
+    .footer-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; gap: 48px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .footer-brand { max-width: 360px; }
+    .footer-logo { font-family: 'League Spartan', var(--font); font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.03em; margin-bottom: 12px; }
+    .footer-tagline { font-family: var(--font); font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+    .footer-links-group { display: flex; gap: 64px; }
+    .footer-col { display: flex; flex-direction: column; gap: 10px; }
+    .footer-col-title { font-family: var(--font); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
+    .footer-link { font-family: var(--font); font-size: 14px; color: rgba(255,255,255,0.5); cursor: pointer; text-decoration: none; transition: color 0.2s; background: none; border: none; padding: 0; text-align: left; }
+    .footer-link:hover { color: #fff; }
+    .footer-bottom { max-width: 1280px; margin: 0 auto; padding: 20px 0; }
+    .footer-copy { font-family: var(--font); font-size: 13px; color: rgba(255,255,255,0.35); }
 
     /* ── Mobile ── */
     @media (max-width: 768px) {
@@ -1189,7 +1206,11 @@ export default function DateAndTell() {
       .cta-email { flex-direction: column; }
       .cta-input { padding: 14px 16px; font-size: 16px; }
       .cta-btn { padding: 14px; font-size: 15px; }
-      .footer { padding: 24px 20px; flex-direction: column; gap: 10px; text-align: center; align-items: center; }
+      .footer { padding: 36px 20px 0; }
+      .footer-inner { flex-direction: column; gap: 32px; }
+      .footer-links-group { gap: 40px; }
+      .legal-page { padding: 32px 20px 48px; }
+      .legal-page h1 { font-size: 26px; }
       .library-page { padding: 32px 20px 64px; }
       .library-title { font-size: 28px; }
       .library-sub { font-size: 15px; }
@@ -1239,7 +1260,7 @@ export default function DateAndTell() {
     }
 
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      .footer { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+      .footer-bottom { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
       .share-toast { bottom: calc(24px + env(safe-area-inset-bottom)); }
     }
   `;
@@ -1874,11 +1895,167 @@ export default function DateAndTell() {
         )
       )}
 
+      {/* Terms of Service */}
+      {page === "terms" && (
+        <div className="legal-page">
+          <h1>Terms of Service</h1>
+          <p className="legal-date">Effective Date: February 17, 2026</p>
+
+          <p>These Terms of Service ("Terms") constitute a legally binding agreement between you ("User," "you," or "your") and Date&Tell ("Company," "we," "us," or "our"), governing your access to and use of the website located at dateandtell.com, including all associated services, features, content, and applications (collectively, the "Service"). By accessing or using the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you do not agree to these Terms, you must not access or use the Service.</p>
+
+          <h2>1. Eligibility</h2>
+          <p>1.1. You must be at least eighteen (18) years of age to access or use the Service. By using the Service, you represent and warrant that you are at least 18 years old and have the legal capacity to enter into these Terms.</p>
+          <p>1.2. If you are accessing the Service on behalf of an entity, you represent and warrant that you have the authority to bind that entity to these Terms.</p>
+
+          <h2>2. Account Registration</h2>
+          <p>2.1. To access certain features of the Service, you may be required to create an account. You agree to provide accurate, current, and complete information during registration and to keep your account information updated.</p>
+          <p>2.2. You are solely responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify us immediately at hello@dateandtell.com of any unauthorized use of your account.</p>
+          <p>2.3. We reserve the right to suspend, disable, or terminate your account at our sole discretion, with or without notice, for any reason, including but not limited to a breach of these Terms.</p>
+
+          <h2>3. User-Submitted Content</h2>
+          <p>3.1. <strong>License Grant.</strong> By submitting any content to the Service, including but not limited to dating stories, text, or other materials ("User Content"), you hereby grant the Company a worldwide, non-exclusive, royalty-free, perpetual, irrevocable, transferable, and sublicensable license to use, reproduce, modify, adapt, edit, publish, translate, create derivative works from, distribute, display, and perform such User Content in any and all media or distribution methods now known or later developed, including but not limited to the Service, newsletters, social media, marketing materials, and any other channels.</p>
+          <p>3.2. <strong>AI Editing.</strong> You acknowledge and agree that all User Content submitted to the Service will be processed by artificial intelligence technology for purposes including, but not limited to: content moderation, editing for tone and length, removal of personally identifying information, generation of titles, assignment of anonymous persona names, and generation of searchable tags. The resulting edited content ("Published Content") may differ materially from your original submission. You consent to such modifications.</p>
+          <p>3.3. <strong>Representations and Warranties.</strong> By submitting User Content, you represent and warrant that: (a) the User Content is based on your own personal experience; (b) you own or have all necessary rights, licenses, and permissions to submit the User Content and to grant the license set forth in Section 3.1; (c) the User Content does not infringe, misappropriate, or violate any third party's intellectual property rights, privacy rights, publicity rights, or any other legal rights; (d) the User Content does not contain the full legal name of any identifiable third party without their express consent; and (e) the User Content does not violate any applicable law, regulation, or these Terms.</p>
+          <p>3.4. <strong>Prohibited Content.</strong> You agree not to submit User Content that: (a) is sexually explicit or pornographic; (b) contains hate speech, threats, harassment, or intimidation directed at any individual or group; (c) is defamatory, libelous, or knowingly false; (d) promotes or describes illegal activity; (e) contains content involving minors in any romantic or sexual context; (f) contains personal identifying information of third parties, including full names, addresses, phone numbers, or employment details; or (g) violates any applicable local, state, national, or international law.</p>
+          <p>3.5. <strong>Content Removal.</strong> We reserve the right, but assume no obligation, to monitor, review, edit, or remove any User Content or Published Content at our sole discretion, for any reason, without notice. We are under no obligation to publish any User Content.</p>
+
+          <h2>4. Intellectual Property</h2>
+          <p>4.1. <strong>Company IP.</strong> The Service, including its design, layout, look and feel, graphics, logos, trademarks, service marks, trade names ("Date&Tell," "Love, Anonymous"), and all software, code, and technology underlying the Service (collectively, "Company IP") are owned by or licensed to the Company and are protected by United States and international intellectual property laws. You may not use, copy, reproduce, modify, or distribute any Company IP without our prior written consent.</p>
+          <p>4.2. <strong>Published Content.</strong> All Published Content, including AI-generated edits, titles, persona names, theme classifications, and tags, constitutes a derivative work and is the property of the Company. Your original, unedited User Content remains your property, subject to the license granted in Section 3.1.</p>
+          <p>4.3. <strong>Feedback.</strong> Any feedback, suggestions, ideas, or other information you provide regarding the Service ("Feedback") is non-confidential and shall become the sole property of the Company. The Company shall be free to use Feedback for any purpose without compensation or attribution to you.</p>
+
+          <h2>5. Newsletter and Communications</h2>
+          <p>5.1. By creating an account or subscribing to the Company's newsletter, you consent to receive electronic communications from us, including but not limited to: welcome emails, weekly newsletter emails, transactional emails (password resets, story status notifications), and promotional communications.</p>
+          <p>5.2. You may opt out of newsletter communications at any time by using the unsubscribe link included in each email. Transactional emails related to your account (such as password resets) cannot be opted out of while your account remains active.</p>
+
+          <h2>6. Acceptable Use</h2>
+          <p>6.1. You agree to use the Service only for lawful purposes and in accordance with these Terms. You agree not to: (a) use the Service to harass, abuse, stalk, threaten, or otherwise violate the legal rights of others; (b) submit false or malicious reports against stories or users; (c) attempt to gain unauthorized access to any part of the Service, other users' accounts, or any systems or networks connected to the Service; (d) use any automated means, including bots, scrapers, crawlers, or spiders, to access or interact with the Service without our express written permission; (e) reverse-engineer, decompile, disassemble, or otherwise attempt to derive the source code of any part of the Service; (f) interfere with or disrupt the integrity or performance of the Service; (g) use the Service to transmit any viruses, malware, or other harmful code; or (h) use shared stories to attempt to identify, dox, or harass the original author.</p>
+
+          <h2>7. Reporting and Moderation</h2>
+          <p>7.1. Users may report Published Content they believe violates these Terms by using the reporting feature available on the Service. We will review reports in good faith but are under no obligation to take any specific action.</p>
+          <p>7.2. We may, at our sole discretion, remove content, issue warnings, or suspend or terminate accounts of users who violate these Terms or whose content is the subject of repeated reports.</p>
+
+          <h2>8. Disclaimers</h2>
+          <p>8.1. THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.</p>
+          <p>8.2. WE DO NOT WARRANT THAT: (A) THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE; (B) THE RESULTS OBTAINED FROM THE SERVICE WILL BE ACCURATE OR RELIABLE; (C) ANY CONTENT, INCLUDING USER CONTENT AND PUBLISHED CONTENT, IS TRUTHFUL, ACCURATE, OR COMPLETE; OR (D) ANY DEFECTS IN THE SERVICE WILL BE CORRECTED.</p>
+          <p>8.3. ALL USER CONTENT AND PUBLISHED CONTENT ON THE SERVICE IS USER-GENERATED AND AI-EDITED. WE MAKE NO REPRESENTATIONS OR WARRANTIES REGARDING THE TRUTHFULNESS, ACCURACY, OR RELIABILITY OF ANY STORY PUBLISHED ON THE SERVICE. YOU ACKNOWLEDGE THAT STORIES ARE ANONYMOUS, UNVERIFIED, AND MAY HAVE BEEN MATERIALLY ALTERED BY AI PROCESSING.</p>
+
+          <h2>9. Limitation of Liability</h2>
+          <p>9.1. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE COMPANY, ITS OFFICERS, DIRECTORS, MEMBERS, EMPLOYEES, AGENTS, AFFILIATES, SUCCESSORS, OR ASSIGNS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO DAMAGES FOR LOSS OF PROFITS, GOODWILL, DATA, OR OTHER INTANGIBLE LOSSES, ARISING OUT OF OR IN CONNECTION WITH: (A) YOUR ACCESS TO OR USE OF, OR INABILITY TO ACCESS OR USE, THE SERVICE; (B) ANY CONDUCT OR CONTENT OF ANY THIRD PARTY ON THE SERVICE; (C) ANY UNAUTHORIZED ACCESS TO OR USE OF OUR SERVERS OR ANY PERSONAL INFORMATION STORED THEREIN; OR (D) ANY INTERRUPTION OR CESSATION OF THE SERVICE.</p>
+          <p>9.2. IN NO EVENT SHALL THE COMPANY'S TOTAL AGGREGATE LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR RELATING TO THE SERVICE OR THESE TERMS EXCEED THE GREATER OF: (A) THE AMOUNTS YOU HAVE PAID TO THE COMPANY IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM, OR (B) ONE HUNDRED U.S. DOLLARS ($100.00).</p>
+
+          <h2>10. Indemnification</h2>
+          <p>10.1. You agree to defend, indemnify, and hold harmless the Company, its officers, directors, members, employees, agents, affiliates, successors, and assigns from and against any and all claims, damages, obligations, losses, liabilities, costs, and expenses (including but not limited to reasonable attorneys' fees) arising from: (a) your use of the Service; (b) your User Content; (c) your violation of these Terms; or (d) your violation of any rights of a third party.</p>
+
+          <h2>11. Dispute Resolution</h2>
+          <p>11.1. <strong>Governing Law.</strong> These Terms shall be governed by and construed in accordance with the laws of the State of California, without regard to its conflict of law provisions.</p>
+          <p>11.2. <strong>Informal Resolution.</strong> Before filing any formal legal action, you agree to first contact us at hello@dateandtell.com and attempt to resolve the dispute informally for at least thirty (30) days.</p>
+          <p>11.3. <strong>Arbitration.</strong> Any dispute arising out of or relating to these Terms or the Service that cannot be resolved informally shall be finally resolved by binding arbitration administered in accordance with the rules of the American Arbitration Association. The arbitration shall be conducted in San Francisco, California.</p>
+          <p>11.4. <strong>Class Action Waiver.</strong> YOU AGREE THAT ANY DISPUTE RESOLUTION PROCEEDINGS WILL BE CONDUCTED ONLY ON AN INDIVIDUAL BASIS AND NOT IN A CLASS, CONSOLIDATED, OR REPRESENTATIVE ACTION.</p>
+
+          <h2>12. Modifications</h2>
+          <p>12.1. We reserve the right to modify, suspend, or discontinue the Service at any time, with or without notice, and without liability to you.</p>
+          <p>12.2. We may revise these Terms from time to time. If we make material changes, we will notify you by email or by posting a notice on the Service. Your continued use of the Service after changes constitutes acceptance of the revised Terms.</p>
+
+          <h2>13. General Provisions</h2>
+          <p>13.1. These Terms, together with the Privacy Policy, constitute the entire agreement between you and the Company regarding the Service.</p>
+          <p>13.2. If any provision of these Terms is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
+          <p>13.3. The failure of the Company to enforce any right or provision shall not constitute a waiver of such right or provision.</p>
+          <p>13.4. You may not assign these Terms without our prior written consent. We may assign these Terms without restriction.</p>
+
+          <h2>14. Contact</h2>
+          <p>Date&Tell<br />Email: <a href="mailto:hello@dateandtell.com">hello@dateandtell.com</a></p>
+        </div>
+      )}
+
+      {/* Privacy Policy */}
+      {page === "privacy" && (
+        <div className="legal-page">
+          <h1>Privacy Policy</h1>
+          <p className="legal-date">Effective Date: February 17, 2026</p>
+
+          <p>This Privacy Policy ("Policy") describes how Date&Tell ("Company," "we," "us," or "our") collects, uses, discloses, and protects information obtained from users ("User," "you," or "your") of the website located at dateandtell.com, including all associated services, features, and applications (collectively, the "Service"). By accessing or using the Service, you consent to the data practices described in this Policy.</p>
+
+          <h2>1. Information We Collect</h2>
+          <h3>1.1. Information You Provide Directly</h3>
+          <p><strong>(a) Account Information.</strong> When you create an account, we collect your first name, email address, and password. Passwords are cryptographically hashed by our authentication provider and are never stored in plain text.</p>
+          <p><strong>(b) User Content.</strong> When you submit a story, we collect the full text of your submission. If you are logged in, your submission is associated with your account.</p>
+          <p><strong>(c) Communications.</strong> If you contact us directly, we may collect your name, email address, and the contents of your message.</p>
+
+          <h3>1.2. Information Collected Automatically</h3>
+          <p><strong>(a) Geolocation Data.</strong> When you submit a story, our hosting provider (Vercel) provides us with your approximate city and country based on your IP address. This data is used for internal analytics only and is never published or shared.</p>
+          <p><strong>(b) Device and Usage Information.</strong> We automatically collect certain information including your IP address, browser type, operating system, pages visited, and time of access through standard server logs.</p>
+          <p><strong>(c) Email Engagement Data.</strong> Our email service providers may collect data regarding email opens and link clicks to improve our communications.</p>
+
+          <h3>1.3. Information Stored Locally</h3>
+          <p>We use your browser's local storage to save preferences such as emoji reactions and saved stories. This data stays on your device and is not sent to our servers.</p>
+
+          <h2>2. How We Use Your Information</h2>
+          <p>We use collected information to: (a) provide and operate the Service; (b) process User Content through AI moderation and editing; (c) manage your account; (d) send transactional emails; (e) send newsletter emails if you opted in; (f) analyze usage patterns to improve the Service; (g) detect and prevent fraud or unauthorized activity; (h) enforce our Terms of Service; (i) respond to inquiries; and (j) comply with legal obligations.</p>
+          <p><strong>We will never sell your personal information to third parties.</strong></p>
+
+          <h2>3. AI Processing</h2>
+          <p>3.1. User Content is transmitted to Anthropic, Inc. for automated AI processing including moderation, editing, anonymization, and title generation. Published Content may differ materially from your original submission.</p>
+          <p>3.2. Your original submission is stored in our database but is never displayed publicly. Only the edited, anonymized version is published.</p>
+
+          <h2>4. Third-Party Service Providers</h2>
+          <p>We use the following services to operate Date&Tell: <strong>Supabase</strong> (database and authentication), <strong>Vercel</strong> (hosting), <strong>Anthropic</strong> (AI processing), <strong>Resend</strong> (transactional email), and <strong>Beehiiv</strong> (newsletter). Each processes data only as necessary to provide their services.</p>
+          <p>We may also disclose information if required by law, regulation, or legal process, or in connection with a merger, acquisition, or sale of assets.</p>
+
+          <h2>5. Data Retention</h2>
+          <p>5.1. We retain your data for as long as your account is active. Upon deletion request, personal information is deleted within thirty (30) days.</p>
+          <p>5.2. Published Content may be retained in anonymized form after account deletion unless you specifically request removal.</p>
+
+          <h2>6. Data Security</h2>
+          <p>We implement commercially reasonable measures to protect your data, including encryption in transit (TLS/HTTPS), hashed passwords, and secure API key management. No method of transmission is completely secure, and we cannot guarantee absolute security.</p>
+
+          <h2>7. Your Rights</h2>
+          <p>All users may: access their data via their account, request corrections, request account deletion at hello@dateandtell.com, opt out of newsletters via unsubscribe links, and request removal of published stories.</p>
+          <p><strong>EEA Residents:</strong> You have additional rights under the GDPR including access, rectification, erasure, restriction of processing, data portability, objection to processing, and the right to lodge a complaint with a supervisory authority.</p>
+          <p><strong>California Residents:</strong> You have rights under the CCPA/CPRA including the right to know, delete, opt out of sale (note: we do not sell personal information), non-discrimination, and correction. We respond to verifiable requests within forty-five (45) days.</p>
+
+          <h2>8. Cookies</h2>
+          <p>We do not use tracking cookies. We use browser local storage for user preferences. Our third-party providers may use their own cookies in connection with their services.</p>
+
+          <h2>9. Children's Privacy</h2>
+          <p>The Service is not directed to individuals under eighteen (18). We do not knowingly collect information from minors. If we learn we have collected such information, we will delete it promptly.</p>
+
+          <h2>10. International Transfers</h2>
+          <p>The Service is operated from the United States. By using the Service, you consent to the transfer and processing of your information in the United States.</p>
+
+          <h2>11. Changes to This Policy</h2>
+          <p>We may update this Policy from time to time. Material changes will be communicated via email or a notice on the Service at least thirty (30) days before taking effect. Continued use constitutes acceptance.</p>
+
+          <h2>12. Contact</h2>
+          <p>Date&Tell<br />Email: <a href="mailto:hello@dateandtell.com">hello@dateandtell.com</a></p>
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="footer">
-        <div className="footer-logo">Date&Tell</div>
-        <a href="mailto:hello@dateandtell.com" className="footer-email">hello@dateandtell.com</a>
-        <div className="footer-copy">© 2026 Date&Tell. Love, Anonymous.</div>
+        <div className="footer-inner">
+          <div className="footer-brand">
+            <div className="footer-logo" onClick={() => setPage("home")} style={{ cursor: "pointer" }}>Date&Tell</div>
+            <div className="footer-tagline">Anonymous dating stories, delivered every Friday. Because dating is better when we're all in on the joke.</div>
+          </div>
+          <div className="footer-links-group">
+            <div className="footer-col">
+              <div className="footer-col-title">Quick Links</div>
+              <span className="footer-link" onClick={() => setPage("submit")}>Share a story</span>
+              <span className="footer-link" onClick={() => setPage("library")}>Story library</span>
+              <span className="footer-link" onClick={() => setPage("subscribe")}>Subscribe</span>
+            </div>
+            <div className="footer-col">
+              <div className="footer-col-title">Support</div>
+              <span className="footer-link" onClick={() => setPage("privacy")}>Privacy policy</span>
+              <span className="footer-link" onClick={() => setPage("terms")}>Terms of service</span>
+              <a href="mailto:hello@dateandtell.com" className="footer-link">Contact us</a>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <div className="footer-copy">© 2026 Date&Tell. All rights reserved. Love, Anonymous.</div>
+        </div>
       </footer>
     </div>
   );
