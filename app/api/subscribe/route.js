@@ -23,7 +23,7 @@ export async function POST(request) {
       },
       body: JSON.stringify({
         email,
-        source: "waitlist",
+        source: "subscriber",
       }),
     });
     // 409 = duplicate email, that's fine
