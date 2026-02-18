@@ -77,19 +77,19 @@ export async function POST(request) {
         subject: "Welcome to Date&Tell 💌",
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px;">
-            <div style="text-align: center; margin-bottom: 32px;">
+            <a href="https://dateandtell.com" style="display: block; text-align: center; margin-bottom: 32px; text-decoration: none;">
               <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px;">Date&amp;Tell</h1>
-              <p style="font-size: 13px; color: #999; margin: 0; font-style: italic;">Love, Anonymous.</p>
-            </div>
+              <p style="font-size: 13px; color: #2563EB; margin: 0; font-style: italic;">Love, Anonymous.</p>
+            </a>
             <div style="background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF, #9B59B6); height: 3px; border-radius: 2px; margin-bottom: 32px;"></div>
-            <p style="font-size: 18px; color: #1a1a1a; margin: 0 0 16px;">Hey ${firstName} 👋</p>
-            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 16px;">Welcome to Date&amp;Tell! You're all set up.</p>
+            <p style="font-size: 18px; color: #1a1a1a; margin: 0 0 16px;">Hey ${firstName},</p>
+            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 16px;">Welcome to <a href="https://dateandtell.com" style="color: #2563EB; text-decoration: none; font-weight: 600;">Date&amp;Tell</a>! You're all set up.</p>
             <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 16px;">Here's what you can do now:</p>
             <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">📝 <strong>Share a dating story</strong> — anonymous, AI-polished, and totally judgment-free</p>
             <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">📊 <strong>Track your stories</strong> — see reactions, shares, and when you go live</p>
             <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">💌 <strong>Get the Friday drop</strong> — the best stories of the week, straight to your inbox</p>
             <div style="text-align: center; margin: 32px 0;">
-              <a href="https://dateandtell.com/submit" style="display: inline-block; background: #1a1a1a; color: white; text-decoration: none; padding: 14px 32px; border-radius: 14px; font-size: 16px; font-weight: 600;">Share your first story</a>
+              <a href="https://dateandtell.com/submit" style="display: inline-block; background: #2563EB; color: white; text-decoration: none; padding: 14px 32px; border-radius: 14px; font-size: 16px; font-weight: 600;">Share a story</a>
             </div>
             <p style="font-size: 14px; color: #999; line-height: 1.6; margin: 32px 0 0; text-align: center;">You're getting this because you created a Date&amp;Tell account. We'll also send you the best dating stories every Friday.</p>
           </div>
