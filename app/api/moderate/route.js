@@ -65,7 +65,7 @@ WHAT GOOD EDITING LOOKS LIKE:
 - The BAD version is choppy, drops the natural flow, and adds "Classic" which wasn't in the original. The GOOD version keeps the person's voice and lets the story flow.
 
 ALSO GENERATE:
-- A fun, catchy title (max 40 chars). Make it sound like a group chat message, not a newspaper headline. Use sentence case (capitalize only the first word, not every word).
+- A short, catchy, funny title (max 40 chars). The title should make someone WANT to click and read. Think of it like a group chat message that makes everyone go "WAIT WHAT." Good titles tease without spoiling, hint at the chaos or sweetness without giving away the punchline. Examples of GOOD titles: "He brought receipts. Literally.", "6 months of waving", "The aunt had a plan", "Blood on his face and I put it there", "I showed him my arm rash". Examples of BAD titles: "Mom's friend tried to set me up" (too literal), "First kiss + nose bleed" (spoils it), "Got serenated in a parking lot" (gives away the ending). Use sentence case (capitalize only the first word, not every word).
 - Assign ONE theme from: First Dates, Meet Cutes, Dating App Disasters, Awkward Moments, Meeting the Family, Situationships
 - A fun anonymous persona name like "Pasta Lover" or "Serial Texter" (no city names, no real names, keep it playful)
 - A comma-separated list of 5-10 searchable tags related to the story content (e.g., "dog, puppy, park, coffee, first date, nervous")
