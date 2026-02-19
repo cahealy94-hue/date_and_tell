@@ -436,8 +436,9 @@ export default function DateAndTell() {
     }
     // Apply pending save if user tried to save before signing up
     if (pendingSaveRef.current) {
+      const pid = String(pendingSaveRef.current);
       setSavedStories(prev => {
-        const updated = prev.includes(pendingSaveRef.current) ? prev : [...prev, pendingSaveRef.current];
+        const updated = prev.includes(pid) ? prev : [...prev, pid];
         try { localStorage.setItem("dt_saved_stories", JSON.stringify(updated)); } catch {}
         return updated;
       });
@@ -657,14 +658,15 @@ export default function DateAndTell() {
   }, []);
 
   const handleSaveStory = useCallback((storyId) => {
+    const id = String(storyId);
     if (!authUser) {
-      pendingSaveRef.current = storyId;
+      pendingSaveRef.current = id;
       setSignupReason("save");
       setPage("signup");
       return;
     }
     setSavedStories(prev => {
-      const updated = prev.includes(storyId) ? prev.filter(id => id !== storyId) : [...prev, storyId];
+      const updated = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
       try { localStorage.setItem("dt_saved_stories", JSON.stringify(updated)); } catch {}
       return updated;
     });
@@ -1447,7 +1449,7 @@ export default function DateAndTell() {
         </div>
         <div className="stories-grid">
           {homeStories.map((s) => (
-            <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.includes(s.id)} isTrending={s._isTrending} />
+            <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} />
           ))}
         </div>
       </div>
@@ -1503,7 +1505,7 @@ export default function DateAndTell() {
               <div className="library-section-title">This week's drop</div>
               <div className="rainbow-accent" style={{ marginBottom: 20 }} />
               <div className="library-grid">
-                {filteredThisWeek.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.includes(s.id)} isTrending={s._isTrending} />)}
+                {filteredThisWeek.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} />)}
               </div>
               <div className="library-divider" />
             </>
@@ -1512,7 +1514,7 @@ export default function DateAndTell() {
           <div className="rainbow-accent" style={{ marginBottom: 20 }} />
           {filteredAll.length > 0 ? (
             <div className="library-grid">
-              {filteredAll.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.includes(s.id)} isTrending={s._isTrending} />)}
+              {filteredAll.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} />)}
             </div>
           ) : (
             <div className="library-grid"><div className="library-empty">{searchQuery ? "No stories match your search." : "No stories found for this filter."}</div></div>
@@ -1807,7 +1809,7 @@ export default function DateAndTell() {
               <div className="dash-loading"><span className="spinner" style={{ borderColor: "rgba(0,0,0,0.1)", borderTopColor: "var(--blue)", width: 24, height: 24 }} /></div>
             ) : dashFilter === "saved" ? (
               (() => {
-                const savedList = stories.filter(s => savedStories.includes(s.id));
+                const savedList = stories.filter(s => savedStories.map(String).includes(String(s.id)));
                 return savedList.length === 0 ? (
                   <div className="dash-empty" style={{ padding: "40px 20px" }}>
                     <div className="dash-empty-icon"><StarIcon filled={false} /></div>
