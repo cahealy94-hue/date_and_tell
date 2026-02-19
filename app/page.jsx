@@ -191,10 +191,11 @@ function StoryCard({ story, onReaction, onReport, onSave, reacted, isSaved, isTr
   return (
     <>
       <div className={`story-card ${isTrending ? "story-card-trending" : ""}`}>
-        {isTrending && <span className="trending-badge">🔥 Trending</span>}
         <div className="story-card-header">
           <div className="story-card-title">{story.title}</div>
-          <div className="story-menu-wrap" ref={menuRef}>
+          <div className="story-header-right">
+            {isTrending && <span className="trending-badge">🔥 Trending</span>}
+            <div className="story-menu-wrap" ref={menuRef}>
             <button className="story-card-dots" onClick={() => setMenuOpen(!menuOpen)}>···</button>
             {menuOpen && (
               <div className="story-menu-dropdown">
@@ -209,6 +210,7 @@ function StoryCard({ story, onReaction, onReport, onSave, reacted, isSaved, isTr
                 </button>
               </div>
             )}
+          </div>
           </div>
         </div>
         <span className={`story-card-theme ${themeClass}`}>{story.theme}</span>
@@ -890,10 +892,10 @@ export default function DateAndTell() {
     .story-card { background: white; border-radius: 20px; padding: 28px; transition: all 0.3s; border: 1px solid var(--border); }
     .story-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.06); border-color: transparent; }
     .story-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .story-header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .story-card-title { font-family: var(--font); font-size: 20px; font-weight: 700; color: var(--black); line-height: 1.25; }
     .story-card-trending { position: relative; }
-    .story-card-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .trending-badge { position: absolute; top: 12px; right: 12px; display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 600; color: #D97706; background: #FFFBEB; padding: 3px 10px; border-radius: 999px; }
+    .trending-badge { display: inline-flex; align-items: center; flex-shrink: 0; gap: 3px; font-size: 11px; font-weight: 600; color: #D97706; background: #FFFBEB; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
     .story-card-dots { color: var(--gray-light); font-size: 18px; cursor: pointer; background: none; border: none; padding: 4px 8px; border-radius: 8px; font-family: var(--font); }
     .story-card-dots:hover { background: var(--blue-pale); }
     .story-menu-wrap { position: relative; }
