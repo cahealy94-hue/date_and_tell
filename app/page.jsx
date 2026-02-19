@@ -298,6 +298,8 @@ export default function DateAndTell() {
   const [originalStoryText, setOriginalStoryText] = useState("");
   const [showOriginal, setShowOriginal] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [regeneratingTitle, setRegeneratingTitle] = useState(false);
+  const [regeneratingStory, setRegeneratingStory] = useState(false);
   const [storyReactions, setStoryReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem("dt_reactions") || "{}"); } catch { return {}; }
   });
@@ -695,6 +697,37 @@ export default function DateAndTell() {
     setSavingEdit(false);
   }, [editedText, editedTitle, submitResult]);
 
+  const handleRegenerate = useCallback(async (target) => {
+    if (!submitResult?.storyId || !originalStoryText) return;
+    if (target === "title") setRegeneratingTitle(true);
+    else setRegeneratingStory(true);
+    try {
+      const res = await fetch("/api/stories/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalText: originalStoryText,
+          currentTitle: submitResult.story.title,
+          currentStory: submitResult.story.text,
+          currentAuthor: submitResult.story.author,
+          currentTheme: submitResult.story.theme,
+          target,
+          storyId: submitResult.storyId,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        if (target === "title" && data.title) {
+          setSubmitResult(prev => ({ ...prev, story: { ...prev.story, title: data.title } }));
+        } else if (target === "story" && data.rewritten) {
+          setSubmitResult(prev => ({ ...prev, story: { ...prev.story, text: data.rewritten } }));
+        }
+      }
+    } catch (err) { console.error("Regenerate error:", err); }
+    if (target === "title") setRegeneratingTitle(false);
+    else setRegeneratingStory(false);
+  }, [submitResult, originalStoryText]);
+
   const renderAuthError = () => {
     if (!authError) return null;
     if (authError === "already_exists") {
@@ -760,6 +793,14 @@ export default function DateAndTell() {
             </>
           )}
           <div className="sp-card-persona">— {s.author}</div>
+        </div>
+        <div className="sp-regen-row">
+          <button className="sp-regen-btn" onClick={() => handleRegenerate("title")} disabled={regeneratingTitle || regeneratingStory}>
+            {regeneratingTitle ? <><span className="spinner sp-spinner" /> Generating...</> : "🔄 New title"}
+          </button>
+          <button className="sp-regen-btn" onClick={() => handleRegenerate("story")} disabled={regeneratingTitle || regeneratingStory}>
+            {regeneratingStory ? <><span className="spinner sp-spinner" /> Generating...</> : "🔄 New version"}
+          </button>
         </div>
         {originalStoryText && (
           <div className="sp-original-section">
@@ -1017,6 +1058,11 @@ export default function DateAndTell() {
     .sp-original-link { background: none; border: none; color: var(--blue); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
     .sp-original-link:hover { opacity: 0.8; }
     .sp-original-text { margin-top: 12px; padding: 16px; background: #F8FAFC; border: 1px solid var(--border); border-radius: 12px; font-family: var(--font); font-size: 14px; color: var(--gray); line-height: 1.6; white-space: pre-wrap; }
+    .sp-regen-row { display: flex; gap: 8px; margin-top: 12px; }
+    .sp-regen-btn { padding: 8px 14px; border-radius: 10px; border: 1.5px solid var(--border); background: white; font-family: var(--font); font-size: 13px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+    .sp-regen-btn:hover { border-color: var(--blue-light); color: var(--blue); background: var(--blue-pale); }
+    .sp-regen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .sp-spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.1); border-top-color: var(--blue); }
     .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
 
     /* ── Auth Pages (Login / Signup) ── */
