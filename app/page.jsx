@@ -684,6 +684,26 @@ export default function DateAndTell() {
     });
   }, [authUser]);
 
+  const [deletingStoryId, setDeletingStoryId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  const handleDeleteDashStory = useCallback(async (storyId) => {
+    setDeletingStoryId(storyId);
+    try {
+      const res = await fetch("/api/stories/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storyId }),
+      });
+      const data = await res.json();
+      if (data.deleted) {
+        setDashboardStories(prev => prev.filter(s => s.id !== storyId));
+      }
+    } catch (err) { console.error("Delete error:", err); }
+    setDeletingStoryId(null);
+    setConfirmDeleteId(null);
+  }, []);
+
   const handleSaveEdit = useCallback(async () => {
     if (!editedText.trim() || !submitResult?.storyId) return;
     setSavingEdit(true);
@@ -1132,6 +1152,14 @@ export default function DateAndTell() {
     .dash-story-text { font-family: var(--font); font-size: 14px; color: var(--gray); line-height: 1.6; margin-bottom: 12px; }
     .dash-story-meta { display: flex; gap: 20px; font-family: var(--font); font-size: 13px; color: var(--gray-light); }
     .dash-story-meta span { display: flex; align-items: center; gap: 4px; }
+    .dash-delete-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .dash-delete-btn { background: none; border: none; font-family: var(--font); font-size: 13px; font-weight: 600; color: var(--gray-light); cursor: pointer; padding: 0; }
+    .dash-delete-btn:hover { color: #DC2626; }
+    .dash-delete-confirm { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .dash-delete-confirm-text { font-family: var(--font); font-size: 13px; font-weight: 600; color: var(--black); }
+    .dash-delete-yes { padding: 6px 14px; border-radius: 8px; border: none; background: #DC2626; color: white; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .dash-delete-yes:disabled { opacity: 0.5; cursor: not-allowed; }
+    .dash-delete-no { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--gray); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; }
     .dash-story-reactions { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .dash-reaction-pill { display: flex; align-items: center; gap: 4px; padding: 6px 12px; background: var(--blue-pale); border-radius: 100px; font-size: 14px; }
     .dash-reaction-count { font-family: var(--font); font-size: 13px; font-weight: 700; color: var(--black); }
@@ -1999,6 +2027,21 @@ export default function DateAndTell() {
                         </span>
                       )}
                     </div>
+                    {s.status === "pending" && (
+                      <div className="dash-delete-row">
+                        {confirmDeleteId === s.id ? (
+                          <div className="dash-delete-confirm">
+                            <span className="dash-delete-confirm-text">Delete this story?</span>
+                            <button className="dash-delete-yes" onClick={() => handleDeleteDashStory(s.id)} disabled={deletingStoryId === s.id}>
+                              {deletingStoryId === s.id ? "Deleting..." : "Yes, delete"}
+                            </button>
+                            <button className="dash-delete-no" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                          </div>
+                        ) : (
+                          <button className="dash-delete-btn" onClick={() => setConfirmDeleteId(s.id)}>🗑️ Delete story</button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })
