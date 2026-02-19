@@ -79,6 +79,22 @@ export async function POST(request) {
     }),
   }).catch(err => console.error("Subscribers table upsert error:", err));
 
+  // ── Add to profiles table ──
+  fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      id: userId,
+      email,
+      name: name || null,
+    }),
+  }).catch(err => console.error("Profiles table insert error:", err));
+
   // ── Send welcome email via Resend (fire and forget) ──
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (RESEND_API_KEY) {
