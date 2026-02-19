@@ -101,8 +101,7 @@ export async function POST(request) {
             </a>
             <div style="background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF, #9B59B6); height: 3px; border-radius: 2px; margin-bottom: 32px;"></div>
             <p style="font-size: 18px; color: #1a1a1a; margin: 0 0 16px;">Hey ${firstName},</p>
-            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 16px;">Welcome to <a href="https://dateandtell.com" style="color: #2563EB; text-decoration: none; font-weight: 600;">Date&amp;Tell</a>! You're all set up.</p>
-            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 16px;">Here's what you can do now:</p>
+            <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 16px;">Welcome to <a href="https://dateandtell.com" style="color: #2563EB; text-decoration: none; font-weight: 600;">Date&amp;Tell</a>! You're all set up. Here's what you can do now:</p>
             <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">📝 <strong>Share a dating story:</strong> Anonymous, AI-polished, and totally judgment-free</p>
             <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">📊 <strong>Track your stories:</strong> See reactions, shares, and when you go live</p>
             <p style="font-size: 16px; color: #444; line-height: 1.6; margin: 0 0 8px;">💌 <strong>Get the Friday drop:</strong> The best stories of the week, straight to your inbox</p>
