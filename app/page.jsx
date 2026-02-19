@@ -294,6 +294,9 @@ export default function DateAndTell() {
   const [submitResult, setSubmitResult] = useState(null);
   const [editingSubmission, setEditingSubmission] = useState(false);
   const [editedText, setEditedText] = useState("");
+  const [editedTitle, setEditedTitle] = useState("");
+  const [originalStoryText, setOriginalStoryText] = useState("");
+  const [showOriginal, setShowOriginal] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [storyReactions, setStoryReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem("dt_reactions") || "{}"); } catch { return {}; }
@@ -574,7 +577,9 @@ export default function DateAndTell() {
     setSubmitResult(null);
     setEditingSubmission(false);
     setEditedText("");
+    setEditedTitle("");
     setShowSignupPrompt(false);
+    setShowOriginal(false);
     try {
       const body = { storyText };
       // If logged in, attach userId
@@ -590,6 +595,7 @@ export default function DateAndTell() {
         setSubmitResult({ type: "rejected", message: result.reason || "We couldn't publish this one, but we'd love a lighter version!" });
       } else {
         setSubmitResult({ type: "approved", storyId: result.storyId, story: { title: result.title, theme: result.theme, author: result.author, text: result.rewritten } });
+        setOriginalStoryText(storyText);
         setStoryText("");
 
         // If not logged in, save story ID for later linking
@@ -681,13 +687,13 @@ export default function DateAndTell() {
       await fetch("/api/stories/edit", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storyId: submitResult.storyId, rewritten_text: editedText }),
+        body: JSON.stringify({ storyId: submitResult.storyId, rewritten_text: editedText, title: editedTitle }),
       });
-      setSubmitResult(prev => ({ ...prev, story: { ...prev.story, text: editedText }, edited: true }));
+      setSubmitResult(prev => ({ ...prev, story: { ...prev.story, text: editedText, title: editedTitle }, edited: true }));
       setEditingSubmission(false);
     } catch (err) { console.error("Edit error:", err); }
     setSavingEdit(false);
-  }, [editedText, submitResult]);
+  }, [editedText, editedTitle, submitResult]);
 
   const renderAuthError = () => {
     if (!authError) return null;
@@ -704,6 +710,7 @@ export default function DateAndTell() {
   const startEditSubmission = () => {
     if (submitResult?.story) {
       setEditedText(submitResult.story.text);
+      setEditedTitle(submitResult.story.title);
       setEditingSubmission(true);
     }
   };
@@ -723,7 +730,7 @@ export default function DateAndTell() {
           <div className="sp-check"><CheckIcon /></div>
           <div className="sp-header-text">
             <div className="sp-title-text">{submitResult.edited ? "Story updated" : "Here's your story"}</div>
-            <div className="sp-subtitle">{submitResult.edited ? "Your changes have been saved. The story is back in review with your edits." : "Submitted for review. If anything looks off, tap the pencil to tweak it."}</div>
+            <div className="sp-subtitle">{submitResult.edited ? "Your changes have been saved. The story is back in review with your edits." : "Submitted for review. Tap the pencil to edit the title or story."}</div>
           </div>
         </div>
         <div className="sp-card">
@@ -733,22 +740,37 @@ export default function DateAndTell() {
               <button className="sp-edit-btn" onClick={startEditSubmission} title="Edit story"><PencilIcon /></button>
             )}
           </div>
-          <div className="sp-card-title">{s.title}</div>
           {editingSubmission ? (
-            <div className="sp-edit-area">
-              <textarea className="sp-edit-textarea" value={editedText} onChange={e => setEditedText(e.target.value)} />
-              <div className="sp-edit-actions">
-                <button className="sp-cancel" onClick={() => setEditingSubmission(false)}>Cancel</button>
-                <button className="sp-save" onClick={handleSaveEdit} disabled={savingEdit}>
-                  {savingEdit ? <><span className="spinner" /> Saving...</> : "Save changes"}
-                </button>
+            <>
+              <input className="sp-title-input" value={editedTitle} onChange={e => setEditedTitle(e.target.value)} placeholder="Story title" />
+              <div className="sp-edit-area">
+                <textarea className="sp-edit-textarea" value={editedText} onChange={e => setEditedText(e.target.value)} />
+                <div className="sp-edit-actions">
+                  <button className="sp-cancel" onClick={() => setEditingSubmission(false)}>Cancel</button>
+                  <button className="sp-save" onClick={handleSaveEdit} disabled={savingEdit}>
+                    {savingEdit ? <><span className="spinner" /> Saving...</> : "Save changes"}
+                  </button>
+                </div>
               </div>
-            </div>
+            </>
           ) : (
-            <div className="sp-card-text">{s.text}</div>
+            <>
+              <div className="sp-card-title">{s.title}</div>
+              <div className="sp-card-text">{s.text}</div>
+            </>
           )}
           <div className="sp-card-persona">— {s.author}</div>
         </div>
+        {originalStoryText && (
+          <div className="sp-original-section">
+            <button className="sp-original-link" onClick={() => setShowOriginal(!showOriginal)}>
+              {showOriginal ? "Hide original submission" : "📝 View your original submission"}
+            </button>
+            {showOriginal && (
+              <div className="sp-original-text">{originalStoryText}</div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -989,6 +1011,12 @@ export default function DateAndTell() {
     .sp-save { padding: 8px 16px; border-radius: 10px; border: none; background: var(--blue); color: white; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
     .sp-save:hover { background: var(--blue-dark); }
     .sp-save:disabled { opacity: 0.6; cursor: not-allowed; }
+    .sp-title-input { width: 100%; padding: 10px 14px; border: 2px solid var(--blue-light); border-radius: 10px; font-size: 18px; font-family: var(--font); font-weight: 700; color: var(--black); background: var(--blue-pale); margin-bottom: 10px; }
+    .sp-title-input:focus { outline: none; border-color: var(--blue); }
+    .sp-original-section { margin-top: 16px; }
+    .sp-original-link { background: none; border: none; color: var(--blue); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+    .sp-original-link:hover { opacity: 0.8; }
+    .sp-original-text { margin-top: 12px; padding: 16px; background: #F8FAFC; border: 1px solid var(--border); border-radius: 12px; font-family: var(--font); font-size: 14px; color: var(--gray); line-height: 1.6; white-space: pre-wrap; }
     .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
 
     /* ── Auth Pages (Login / Signup) ── */
@@ -1224,6 +1252,7 @@ export default function DateAndTell() {
       .sp-card { padding: 20px; }
       .sp-card-title { font-size: 16px; }
       .sp-edit-textarea { font-size: 16px; }
+      .sp-title-input { font-size: 16px; }
       .how-section { padding: 48px 20px; }
       .how-title { font-size: 24px; margin-bottom: 32px; }
       .how-grid { grid-template-columns: 1fr; gap: 14px; }
@@ -1275,6 +1304,9 @@ export default function DateAndTell() {
       .dash-filters { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
       .dash-filter { white-space: nowrap; flex-shrink: 0; }
       .dash-title { font-size: 28px; }
+      .dash-story-meta { gap: 12px; flex-wrap: wrap; font-size: 12px; }
+      .report-modal { padding: 24px 20px; }
+      .report-option { text-align: left; justify-content: flex-start; }
     }
 
     @media (max-width: 380px) {
@@ -1392,7 +1424,7 @@ export default function DateAndTell() {
                 <div className="submit-form-area">
                   <textarea className="submit-textarea" placeholder="Tell us your funniest, cringiest, or cutest dating moment…"
                     rows={5} value={storyText} onChange={e => setStoryText(e.target.value)} />
-                  <span className={`submit-char-count ${storyText.length > 500 ? "over" : storyText.length > 400 ? "warn" : ""}`}>{storyText.length}/500</span>
+                  <span className={`submit-char-count ${storyText.length > 750 ? "over" : storyText.length > 600 ? "warn" : ""}`}>{storyText.length}/750</span>
                 </div>
                 <div className="submit-row">
                   <button className="submit-btn" onClick={handleSubmitStory} disabled={!storyText.trim() || submitting}>
@@ -1434,7 +1466,7 @@ export default function DateAndTell() {
                   </div>
                 )}
 
-                <button className="submit-another-btn" onClick={() => { setSubmitResult(null); setStoryText(""); setShowSignupPrompt(false); setAuthError(""); setTimeout(() => { const el = document.getElementById("home-submit"); if (el) { const y = el.getBoundingClientRect().top + window.pageYOffset - 100; window.scrollTo({ top: y, behavior: "smooth" }); } }, 50); }}>
+                <button className="submit-another-btn" onClick={() => { setSubmitResult(null); setStoryText(""); setOriginalStoryText(""); setShowOriginal(false); setShowSignupPrompt(false); setAuthError(""); setTimeout(() => { const el = document.getElementById("home-submit"); if (el) { const y = el.getBoundingClientRect().top + window.pageYOffset - 100; window.scrollTo({ top: y, behavior: "smooth" }); } }, 50); }}>
                   Submit another story
                 </button>
               </>
@@ -1560,7 +1592,7 @@ export default function DateAndTell() {
                 <div className="submit-page-form">
                   <textarea className="submit-page-textarea" placeholder="Tell us your funniest, cringiest, or cutest dating moment…"
                     value={storyText} onChange={e => setStoryText(e.target.value)} />
-                  <span className={`submit-page-char ${storyText.length > 500 ? "over" : storyText.length > 400 ? "warn" : ""}`}>{storyText.length}/500</span>
+                  <span className={`submit-page-char ${storyText.length > 750 ? "over" : storyText.length > 600 ? "warn" : ""}`}>{storyText.length}/750</span>
                 </div>
                 <button className="submit-page-btn" onClick={handleSubmitStory} disabled={!storyText.trim() || submitting}>
                   {submitting ? <><span className="spinner" /> Our AI is polishing your story...</> : "Submit story"}
@@ -1609,7 +1641,7 @@ export default function DateAndTell() {
                 )}
 
                 {/* Submit another story — at the bottom */}
-                <button className="submit-another-btn" onClick={() => { setSubmitResult(null); setStoryText(""); setShowSignupPrompt(false); setAuthError(""); }}>
+                <button className="submit-another-btn" onClick={() => { setSubmitResult(null); setStoryText(""); setOriginalStoryText(""); setShowOriginal(false); setShowSignupPrompt(false); setAuthError(""); }}>
                   Submit another story
                 </button>
               </>
