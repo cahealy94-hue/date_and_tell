@@ -306,6 +306,7 @@ export default function DateAndTell() {
   const [hiddenStories, setHiddenStories] = useState(new Set());
   const [mobileMenu, setMobileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [libraryShuffleKey, setLibraryShuffleKey] = useState(() => Date.now());
 
   // ── Auth State ──
   const [authUser, setAuthUser] = useState(null);
@@ -343,6 +344,7 @@ export default function DateAndTell() {
     const url = p === "home" ? "/" : `/${p}`;
     window.history.pushState({}, "", url);
     window.scrollTo(0, 0);
+    if (p === "library") setLibraryShuffleKey(k => k + 1);
   };
 
   useEffect(() => {
@@ -838,8 +840,24 @@ export default function DateAndTell() {
     });
   };
   const themeFilter = (arr) => filter === "All" ? arr : arr.filter(s => s.theme === filter);
+  const shuffleWithWeight = useCallback((arr, seed) => {
+    if (!arr.length) return arr;
+    const seededRandom = (i) => {
+      let x = Math.sin(seed * 9301 + i * 49297 + 233280) * 49297;
+      return x - Math.floor(x);
+    };
+    return [...arr].map((item, i) => {
+      const reactions = item._sortScore != null ? item._sortScore : Object.values(item.reactions || {}).reduce((sum, n) => sum + n, 0);
+      const weight = Math.log2(reactions + 2);
+      const noise = seededRandom(i) * 4;
+      return { ...item, _shuffleScore: weight + noise };
+    }).sort((a, b) => b._shuffleScore - a._shuffleScore);
+  }, []);
+
   const filteredThisWeek = sortByReactions(searchFilter(themeFilter(thisWeekStories)));
-  const filteredAll = sortByReactions(searchFilter(themeFilter(visibleStories)));
+  const filteredAll = searchQuery.trim() || filter !== "All"
+    ? sortByReactions(searchFilter(themeFilter(visibleStories)))
+    : shuffleWithWeight(searchFilter(themeFilter(visibleStories)), libraryShuffleKey);
   const allThemes = ["All", ...THEMES];
 
   // ── Dashboard helpers ──
