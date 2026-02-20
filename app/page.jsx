@@ -384,7 +384,7 @@ export default function DateAndTell() {
               id: s.id, title: s.title, theme: s.theme, author: s.author_persona,
               text: s.rewritten_text,
               tags: Array.isArray(s.search_tags) ? s.search_tags : [],
-              publishedAt: s.published_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+              publishedAt: s.published_at || new Date().toISOString(),
               reactions: s.reactions || {},
             }));
             // Add sort score and trending flag to each story
