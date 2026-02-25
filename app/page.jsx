@@ -1612,7 +1612,7 @@ export default function DateAndTell() {
         </div>
         <div className="stories-grid">
           {homeStories.map((s) => (
-            <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} storyText={storyText} onStoryTextChange={setStoryText} onNavigateSubmit={() => setPage("submit")} />)}
+            <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} storyText={storyText} onStoryTextChange={setStoryText} onNavigateSubmit={() => setPage("submit")} />
           ))}
         </div>
       </div>
