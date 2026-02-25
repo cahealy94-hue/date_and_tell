@@ -153,12 +153,13 @@ function clearUnlinkedStoryIds() {
 }
 
 // ── Story Card Component ──
-function StoryCard({ story, onReaction, onReport, onSave, reacted, isSaved, isTrending }) {
+function StoryCard({ story, onReaction, onReport, onSave, reacted, isSaved, isTrending, storyText, onStoryTextChange, onNavigateSubmit }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportStep, setReportStep] = useState(null);
   const [selectedReason, setSelectedReason] = useState(null);
   const [pendingReport, setPendingReport] = useState(false);
   const [shared, setShared] = useState(false);
+  const beenThereShownRef = useRef(false);
 const [beenThereModal, setBeenThereModal] = useState(false);
   const menuRef = useRef(null);
 
@@ -223,7 +224,7 @@ const [beenThereModal, setBeenThereModal] = useState(false);
             const count = story.reactions?.[emoji] || 0;
             const isActive = reacted[`${story.id}-${emoji}`];
             return (
-              <button key={emoji} className={`story-reaction ${isActive ? "active" : ""}`} onClick={() => { onReaction(story.id, emoji); if (emoji === "💯" && !isActive) setBeenThereModal(true); }}>
+              <button key={emoji} className={`story-reaction ${isActive ? "active" : ""}`} onClick={() => { onReaction(story.id, emoji); if (emoji === "💯" && !isActive && !beenThereShownRef.current) { beenThereShownRef.current = true; setBeenThereModal(true); } }}>
                 {emoji}{count > 0 && <span className="reaction-count">{count}</span>}
               </button>
             );
@@ -263,12 +264,18 @@ const [beenThereModal, setBeenThereModal] = useState(false);
       )}
 {beenThereModal && (
   <div className="report-overlay" onClick={() => setBeenThereModal(false)}>
-    <div className="report-modal" onClick={e => e.stopPropagation()} style={{ textAlign: "center", maxWidth: 380 }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>💯</div>
-      <h3 style={{ marginBottom: 8 }}>Been there?</h3>
-      <p className="report-sub" style={{ marginBottom: 24 }}>The best stories come from people who've lived it. Yours might be someone's favorite Friday read.</p>
-      <button className="auth-btn" onClick={() => { setBeenThereModal(false); window.location.href = "/submit"; }}>Share your story</button>
-      <button className="report-cancel" style={{ marginTop: 10, width: "100%" }} onClick={() => setBeenThereModal(false)}>Maybe later</button>
+    <div className="report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h3 style={{ marginBottom: 4 }}>💯 Been there?</h3>
+          <p className="report-sub" style={{ marginBottom: 16 }}>The best stories come from people who've lived it. Spill yours — it takes 30 seconds.</p>
+        </div>
+        <button onClick={() => setBeenThereModal(false)} style={{ background: "none", border: "none", fontSize: 20, color: "#94A3B8", cursor: "pointer", padding: "4px 8px" }}>✕</button>
+      </div>
+      <textarea placeholder="Tell us your dating moment…" value={storyText} onChange={e => onStoryTextChange(e.target.value)} style={{ width: "100%", padding: 14, border: "2px solid #E2E8F0", borderRadius: 12, fontSize: 15, fontFamily: "var(--font)", color: "#0F172A", resize: "vertical", lineHeight: 1.5, minHeight: 120, background: "#EFF6FF" }} />
+      <button className="auth-btn" style={{ marginTop: 12 }} onClick={() => { setBeenThereModal(false); onNavigateSubmit(); }}>Keep writing on submit page →</button>
+      <button className="report-cancel" style={{ marginTop: 8, width: "100%" }} onClick={() => setBeenThereModal(false)}>Maybe later</button>
+      <p style={{ fontFamily: "var(--font)", fontSize: 12, color: "#94A3B8", textAlign: "center", marginTop: 10 }}>🔒 100% anonymous. Always.</p>
     </div>
   </div>
 )}
@@ -1605,7 +1612,7 @@ export default function DateAndTell() {
         </div>
         <div className="stories-grid">
           {homeStories.map((s) => (
-            <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} />
+            <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} storyText={storyText} onStoryTextChange={setStoryText} onNavigateSubmit={() => setPage("submit")} />
           ))}
         </div>
       </div>
@@ -1661,7 +1668,7 @@ export default function DateAndTell() {
               <div className="library-section-title">This week's drop</div>
               <div className="rainbow-accent" style={{ marginBottom: 20 }} />
               <div className="library-grid">
-                {filteredThisWeek.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} />)}
+                {filteredThisWeek.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} storyText={storyText} onStoryTextChange={setStoryText} onNavigateSubmit={() => setPage("submit")} />
               </div>
               <div className="library-divider" />
             </>
@@ -1670,7 +1677,7 @@ export default function DateAndTell() {
           <div className="rainbow-accent" style={{ marginBottom: 20 }} />
           {filteredAll.length > 0 ? (
             <div className="library-grid">
-              {filteredAll.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} />)}
+              {filteredAll.map(s => <StoryCard key={s.id} story={s} onReaction={handleReaction} onReport={handleReport} onSave={handleSaveStory} reacted={storyReactions} isSaved={savedStories.map(String).includes(String(s.id))} isTrending={s._isTrending} storyText={storyText} onStoryTextChange={setStoryText} onNavigateSubmit={() => setPage("submit")} />
             </div>
           ) : (
             <div className="library-grid"><div className="library-empty">{searchQuery ? "No stories match your search." : "No stories found for this filter."}</div></div>
