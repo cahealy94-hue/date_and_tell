@@ -267,10 +267,11 @@ const [beenThereModal, setBeenThereModal] = useState(false);
     <div onClick={e => e.stopPropagation()} style={{ maxWidth: 440, width: "100%", margin: "0 20px" }}>
       <div className="submit-page-rainbow" />
       <div style={{ background: "white", borderRadius: "0 0 20px 20px", padding: "32px 24px", border: "1px solid var(--border)", borderTop: "none", boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-          <h1 style={{ fontFamily: "var(--font)", fontSize: 24, fontWeight: 700, color: "var(--black)", margin: 0 }}>💯 Spill yours.</h1>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+          <h1 style={{ fontFamily: "var(--font)", fontSize: 24, fontWeight: 700, color: "var(--black)", margin: 0 }}>💯 Been there?</h1>
           <button onClick={() => setBeenThereModal(false)} style={{ background: "none", border: "none", fontSize: 22, color: "var(--gray-light)", cursor: "pointer", padding: 0, lineHeight: 1 }}>✕</button>
         </div>
+        <p style={{ fontFamily: "var(--font)", fontSize: 14, color: "var(--gray)", marginBottom: 16 }}>Your worst date is someone's best Friday read.</p>
         <textarea className="submit-page-textarea" placeholder="Tell us your dating moment…" value={storyText} onChange={e => onStoryTextChange(e.target.value)} style={{ minHeight: 120 }} />
         <button className="submit-page-btn" style={{ marginTop: 12 }} onClick={() => { setBeenThereModal(false); onNavigateSubmit(); }}>Submit story</button>
         <p style={{ fontFamily: "var(--font)", fontSize: 12, color: "var(--gray-light)", textAlign: "center", marginTop: 10 }}>🔒 100% anonymous. Always.</p>
