@@ -26,7 +26,7 @@ const SAMPLE_STORIES = [
 ];
 
 const THEMES = ["First Dates", "Meet Cutes", "Dating App Disasters", "Awkward Moments", "Meeting the Family", "Situationships"];
-const EMOJI_OPTIONS = ["😂", "❤️", "😬", "✨", "💀"];
+const EMOJI_OPTIONS = ["😂", "❤️", "😬", "✨", "💀", "💯"];
 const REPORT_REASONS = ["Inappropriate or explicit content", "Hate speech or discrimination", "Contains personal information", "Harassment or bullying", "Spam or fake story"];
 
 // ── Synonym Map for Smart Search ──
@@ -158,7 +158,7 @@ function StoryCard({ story, onReaction, onReport, onSave, reacted, isSaved, isTr
   const [reportStep, setReportStep] = useState(null);
   const [selectedReason, setSelectedReason] = useState(null);
   const [pendingReport, setPendingReport] = useState(false);
-  const [shared, setShared] = useState(false);
+  const [beenThereModal, setBeenThereModal] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -222,7 +222,7 @@ function StoryCard({ story, onReaction, onReport, onSave, reacted, isSaved, isTr
             const count = story.reactions?.[emoji] || 0;
             const isActive = reacted[`${story.id}-${emoji}`];
             return (
-              <button key={emoji} className={`story-reaction ${isActive ? "active" : ""}`} onClick={() => onReaction(story.id, emoji)}>
+              <button key={emoji} className={`story-reaction ${isActive ? "active" : ""}`} onClick={() => { onReaction(story.id, emoji); if (emoji === "💯" && !isActive) setBeenThereModal(true); }}>
                 {emoji}{count > 0 && <span className="reaction-count">{count}</span>}
               </button>
             );
@@ -260,7 +260,17 @@ function StoryCard({ story, onReaction, onReport, onSave, reacted, isSaved, isTr
           </div>
         </div>
       )}
-
+{beenThereModal && (
+  <div className="report-overlay" onClick={() => setBeenThereModal(false)}>
+    <div className="report-modal" onClick={e => e.stopPropagation()} style={{ textAlign: "center", maxWidth: 380 }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>💯</div>
+      <h3 style={{ marginBottom: 8 }}>Been there?</h3>
+      <p className="report-sub" style={{ marginBottom: 24 }}>The best stories come from people who've lived it. Yours might be someone's favorite Friday read.</p>
+      <button className="auth-btn" onClick={() => { setBeenThereModal(false); window.location.href = "/submit"; }}>Share your story</button>
+      <button className="report-cancel" style={{ marginTop: 10, width: "100%" }} onClick={() => setBeenThereModal(false)}>Maybe later</button>
+    </div>
+  </div>
+)}
       {shared && (
         <div className="share-toast">
           <CheckIcon /> Link copied
