@@ -146,7 +146,7 @@ export default function HowItWorksCarousel() {
 
   return (
     <div style={{ width: "100%", fontFamily: "inherit" }}>
-      <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", color: "#9CA3AF", fontWeight: 500, marginBottom: 12 }}>
+      <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", color: "rgba(255,255,255,0.5)", fontWeight: 500, marginBottom: 12 }}>
         How it works
       </p>
 
