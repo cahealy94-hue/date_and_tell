@@ -1619,7 +1619,7 @@ export default function DateAndTell() {
       </div>
       </div>
 
-      <div style={{ background: "#0F172A", padding: "48px" }}>
+      <div style={{ background: "#2563EB", padding: "48px" }}>
   <div style={{ maxWidth: 724, margin: "0 auto" }}>
     <HowItWorksCarousel />
   </div>
