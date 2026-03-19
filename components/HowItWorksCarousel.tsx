@@ -8,8 +8,8 @@ const STEPS = [
     title: "No name, no email, no small talk. Just spill.",
     desc: "No account, no login, no awkward sign-up form. This is a judgment-free zone — drop your story and go.",
     tag: "Zero account required",
-    tagClass: "bg-blue-100 text-blue-700",
-    bgClass: "bg-blue-50",
+    tagStyle: { background: "#DBEAFE", color: "#1D4ED8" },
+    bgStyle: { background: "#EFF6FF" },
     illustration: (
       <svg width="88" height="88" viewBox="0 0 88 88" fill="none">
         <rect x="18" y="12" width="44" height="56" rx="5" fill="#BFDBFE" stroke="#93C5FD" strokeWidth="1" />
@@ -32,8 +32,8 @@ const STEPS = [
     title: "AI polishes your story and covers your tracks",
     desc: "Our AI sharpens your story into something worth reading — and quietly takes care of any details that could hit a little too close to home.",
     tag: "Polished and anonymized",
-    tagClass: "bg-green-100 text-green-700",
-    bgClass: "bg-green-50",
+    tagStyle: { background: "#DCFCE7", color: "#15803D" },
+    bgStyle: { background: "#F0FDF4" },
     illustration: (
       <svg width="88" height="88" viewBox="0 0 88 88" fill="none">
         <defs>
@@ -65,8 +65,8 @@ const STEPS = [
     title: "Meet your story's alter ego",
     desc: "Once submitted, you'll see the AI-generated version — complete with a persona and title. Like what you see? Great. Want to tweak it? Go for it. It's still yours.",
     tag: "Edit anytime after submitting",
-    tagClass: "bg-orange-100 text-orange-700",
-    bgClass: "bg-orange-50",
+    tagStyle: { background: "#FFEDD5", color: "#C2410C" },
+    bgStyle: { background: "#FFF7ED" },
     illustration: (
       <svg width="88" height="88" viewBox="0 0 88 88" fill="none">
         <rect x="12" y="14" width="64" height="58" rx="6" fill="#FFEDD5" stroke="#FED7AA" strokeWidth="1" />
@@ -94,8 +94,8 @@ const STEPS = [
     title: "Your story enters the spotlight queue",
     desc: "Every submission is reviewed before it goes live — the best ones get featured. Subscribe to our newsletter so you're the first to know when yours hits the big screen.",
     tag: "Get notified via newsletter",
-    tagClass: "bg-amber-100 text-amber-700",
-    bgClass: "bg-amber-50",
+    tagStyle: { background: "#FEF3C7", color: "#92400E" },
+    bgStyle: { background: "#FFFBEB" },
     illustration: (
       <svg width="88" height="88" viewBox="0 0 88 88" fill="none">
         <path d="M44 10 L22 68 L66 68 Z" fill="#FDE68A" opacity="0.5" />
@@ -145,46 +145,82 @@ export default function HowItWorksCarousel() {
   }, []);
 
   return (
-    <div className="w-full">
-      <p className="text-[11px] uppercase tracking-widest text-gray-400 font-medium mb-3">
+    <div style={{ width: "100%", fontFamily: "inherit" }}>
+      <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", color: "#9CA3AF", fontWeight: 500, marginBottom: 12 }}>
         How it works
       </p>
 
-      {/* Carousel */}
       <div
-        className="overflow-hidden rounded-xl"
+        style={{ overflow: "hidden", borderRadius: 12 }}
         onMouseEnter={clearTimer}
         onMouseLeave={startTimer}
       >
         <div
-          className="flex transition-transform duration-[420ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-          style={{ transform: `translateX(-${current * 100}%)` }}
+          style={{
+            display: "flex",
+            transition: "transform 420ms cubic-bezier(0.4,0,0.2,1)",
+            transform: `translateX(-${current * 100}%)`,
+          }}
         >
           {STEPS.map((step, i) => (
             <div
               key={i}
-              className="min-w-full flex border border-gray-100 rounded-xl bg-white overflow-hidden min-h-[152px]"
+              style={{
+                minWidth: "100%",
+                display: "flex",
+                border: "0.5px solid #E5E7EB",
+                borderRadius: 12,
+                background: "white",
+                overflow: "hidden",
+                minHeight: 152,
+              }}
             >
-              {/* Illustration panel */}
+              {/* Illustration */}
               <div
-                className={`w-[130px] shrink-0 flex items-center justify-center p-4 ${step.bgClass}`}
+                style={{
+                  width: 130,
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 16,
+                  ...step.bgStyle,
+                }}
               >
                 {step.illustration}
               </div>
 
-              {/* Text panel */}
-              <div className="flex-1 p-5 border-l border-gray-100 flex flex-col justify-center">
-                <p className="text-[10.5px] font-medium tracking-widest uppercase text-gray-400 mb-1">
+              {/* Text */}
+              <div
+                style={{
+                  flex: 1,
+                  padding: "20px 20px 18px 20px",
+                  borderLeft: "0.5px solid #E5E7EB",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <p style={{ fontSize: 10.5, fontWeight: 500, letterSpacing: "0.07em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: 5 }}>
                   {step.label}
                 </p>
-                <p className="text-[14.5px] font-medium text-gray-900 leading-snug mb-1.5">
+                <p style={{ fontSize: 14.5, fontWeight: 500, color: "#111827", lineHeight: 1.35, marginBottom: 7 }}>
                   {step.title}
                 </p>
-                <p className="text-[12.5px] text-gray-500 leading-relaxed">
+                <p style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.55 }}>
                   {step.desc}
                 </p>
                 <span
-                  className={`inline-block mt-2.5 text-[11px] font-medium px-2.5 py-0.5 rounded-full w-fit ${step.tagClass}`}
+                  style={{
+                    display: "inline-block",
+                    marginTop: 10,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    padding: "3px 10px",
+                    borderRadius: 999,
+                    width: "fit-content",
+                    ...step.tagStyle,
+                  }}
                 >
                   {step.tag}
                 </span>
@@ -195,25 +231,41 @@ export default function HowItWorksCarousel() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-between mt-3 px-0.5">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 11, padding: "0 2px" }}>
         <button
           onClick={() => nav(-1)}
           disabled={current === 0}
-          className="text-[13px] px-3 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          style={{
+            background: "none",
+            border: "0.5px solid #E5E7EB",
+            borderRadius: 8,
+            color: "#6B7280",
+            fontSize: 13,
+            padding: "5px 12px",
+            cursor: current === 0 ? "not-allowed" : "pointer",
+            opacity: current === 0 ? 0.3 : 1,
+            fontFamily: "inherit",
+          }}
         >
           ← Prev
         </button>
 
-        <div className="flex gap-1.5 items-center">
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {STEPS.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                i === current
-                  ? "bg-blue-600 scale-125"
-                  : "bg-gray-300 hover:bg-gray-400"
-              }`}
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: i === current ? "#2563EB" : "#D1D5DB",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                transform: i === current ? "scale(1.3)" : "scale(1)",
+                transition: "all 0.3s",
+              }}
             />
           ))}
         </div>
@@ -221,7 +273,17 @@ export default function HowItWorksCarousel() {
         <button
           onClick={() => nav(1)}
           disabled={current === STEPS.length - 1}
-          className="text-[13px] px-3 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          style={{
+            background: "none",
+            border: "0.5px solid #E5E7EB",
+            borderRadius: 8,
+            color: "#6B7280",
+            fontSize: 13,
+            padding: "5px 12px",
+            cursor: current === STEPS.length - 1 ? "not-allowed" : "pointer",
+            opacity: current === STEPS.length - 1 ? 0.3 : 1,
+            fontFamily: "inherit",
+          }}
         >
           Next →
         </button>
