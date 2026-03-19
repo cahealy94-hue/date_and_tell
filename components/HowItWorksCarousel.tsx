@@ -156,7 +156,7 @@ export default function HowItWorksCarousel() {
 
   return (
     <div style={{ width: "100%", fontFamily: "inherit" }}>
-      <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", color: "rgba(255,255,255,0.6)", fontWeight: 500, marginBottom: 12 }}>
+      <p style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.07em", color: "white", fontWeight: 700, marginBottom: 16 }}>
         How it works
       </p>
 
@@ -251,8 +251,8 @@ export default function HowItWorksCarousel() {
           onClick={() => nav(-1)}
           disabled={current === 0}
           style={{
-            background: "rgba(255,255,255,0.1)",
-            border: "0.5px solid rgba(255,255,255,0.3)",
+            background: "rgba(255,255,255,0.2)",
+border: "1.5px solid rgba(255,255,255,0.6)",
             borderRadius: 8,
             color: "white",
             fontSize: 13,
@@ -289,8 +289,8 @@ export default function HowItWorksCarousel() {
           onClick={() => nav(1)}
           disabled={current === STEPS.length - 1}
           style={{
-            background: "rgba(255,255,255,0.1)",
-            border: "0.5px solid rgba(255,255,255,0.3)",
+            background: "rgba(255,255,255,0.2)",
+border: "1.5px solid rgba(255,255,255,0.6)",
             borderRadius: 8,
             color: "white",
             fontSize: 13,
