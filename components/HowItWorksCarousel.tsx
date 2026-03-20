@@ -132,22 +132,30 @@ export default function HowItWorksCarousel() {
   const goTo = (i: number) => setCurrent(i);
 
   const nav = (dir: number) => {
-    setCurrent((prev) => {
-      const next = prev + dir;
-      if (next < 0 || next >= STEPS.length) return prev;
-      return next;
-    });
-  };
+  clearTimer();
+  setCurrent((prev) => {
+    const next = prev + dir;
+    if (next < 0 || next >= STEPS.length) return prev;
+    return next;
+  });
+};
 
   const startTimer = () => {
-    timerRef.current = setInterval(() => {
-      setCurrent((prev) => (prev < STEPS.length - 1 ? prev + 1 : 0));
-    }, 3800);
-  };
+  timerRef.current = setInterval(() => {
+    setCurrent((prev) => {
+      if (prev < STEPS.length - 1) return prev + 1;
+      clearTimer();
+      return prev;
+    });
+  }, 6000);
+};
 
-  const clearTimer = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-  };
+const clearTimer = () => {
+  if (timerRef.current) {
+    clearInterval(timerRef.current);
+    timerRef.current = null;
+  }
+};
 
   useEffect(() => {
     startTimer();
@@ -269,7 +277,7 @@ border: "1.5px solid rgba(255,255,255,0.6)",
           {STEPS.map((_, i) => (
             <button
               key={i}
-              onClick={() => goTo(i)}
+              onClick={() => { clearTimer(); goTo(i); }}
               style={{
                 width: 6,
                 height: 6,
