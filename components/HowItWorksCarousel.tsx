@@ -145,6 +145,7 @@ export default function HowItWorksCarousel() {
     setCurrent((prev) => {
       if (prev < STEPS.length - 1) return prev + 1;
       clearTimer();
+      setTimeout(() => setCurrent(0), 400);
       return prev;
     });
   }, 6000);
