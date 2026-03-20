@@ -64,7 +64,7 @@ const STEPS = [
     label: "Step 3 of 4",
     title: "Meet your story's alter ego",
     desc: "Once submitted, you'll see the AI-generated version — complete with a persona and title. Like what you see? Great. Want to tweak it? Go for it. It's still yours.",
-    tag: "Edit anytime after submitting",
+    tag: "Editable after submitting",
     tagStyle: { background: "#FFEDD5", color: "#C2410C" },
     bgStyle: { background: "#FFF7ED" },
     illustration: (
