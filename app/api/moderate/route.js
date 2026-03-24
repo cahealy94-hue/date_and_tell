@@ -80,7 +80,9 @@ ${storyText}`
     });
 
     const data = await response.json();
-    const text = data.content?.[0]?.text || "";
+console.log("Raw AI response:", JSON.stringify(data));
+console.log("HTTP status:", response.status);
+const text = data.content?.[0]?.text || "";
 
     try {
   const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
