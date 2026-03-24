@@ -588,6 +588,7 @@ export default function DateAndTell() {
     if (source === "hero") setHeroSub(true);
     else if (source === "cta") setCtaSub(true);
     else if (source === "page") setPageSub(true);
+    setTimeout(() => setShowSubscribeConfirm(true), 300);
     try {
       await fetch("/api/subscribe", {
         method: "POST",
@@ -1459,7 +1460,7 @@ export default function DateAndTell() {
     <div style={{ fontFamily: "var(--font)", background: "white", minHeight: "100vh" }}>
       <style>{css}</style>
 
-      <InterstitialModal submitPath="/submit" />
+      <InterstitialModal onCTA={() => setPage('submit')} />
       {showSubscribeConfirm && (
         <SubscribeConfirmModal
           onClose={() => setShowSubscribeConfirm(false)}
