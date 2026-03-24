@@ -1,47 +1,45 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
 interface SubscribeConfirmModalProps {
   onClose: () => void;
-  /** Path to the story library. Defaults to '/stories' */
-  storiesPath?: string;
+  onGoToLibrary: () => void;
 }
 
-export default function SubscribeConfirmModal({
-  onClose,
-  storiesPath = '/stories',
-}: SubscribeConfirmModalProps) {
-  const router = useRouter();
+const TEASER_STORY = {
+  theme: 'Situationships',
+  themeColor: { bg: '#E0F2FE', color: '#0369A1' },
+  title: 'The Label Conversation',
+  text: 'After four months of "hanging out" I finally asked where we stood. He said "I really like what we have." I said "what do we have?" He said "this conversation is a great example."',
+  author: 'Hopeless Romantic',
+  reactions: { '😂': 134, '😬': 89, '💀': 67 },
+};
 
+export default function SubscribeConfirmModal({ onClose, onGoToLibrary }: SubscribeConfirmModalProps) {
   const handleCTA = () => {
     onClose();
-    router.push(storiesPath);
+    onGoToLibrary();
+  };
+
+  const handleTeaserClick = () => {
+    onClose();
+    onGoToLibrary();
   };
 
   return (
     <div
       onClick={onClose}
       style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999,
-        padding: '1rem',
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 9999, padding: '1rem',
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#ffffff',
-          borderRadius: '20px',
-          padding: '2rem 1.75rem 1.75rem',
-          width: '100%',
-          maxWidth: '420px',
-          position: 'relative',
+          background: '#ffffff', borderRadius: '20px',
+          padding: '2rem 1.75rem 1.75rem', width: '100%',
+          maxWidth: '440px', position: 'relative',
           animation: 'fadeInUp 0.2s ease-out',
         }}
       >
@@ -50,47 +48,27 @@ export default function SubscribeConfirmModal({
           onClick={onClose}
           aria-label="Close"
           style={{
-            position: 'absolute',
-            top: '14px',
-            right: '14px',
-            width: '30px',
-            height: '30px',
-            borderRadius: '50%',
-            background: '#f3f4f6',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            color: '#6b7280',
-            fontWeight: 600,
-            lineHeight: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            position: 'absolute', top: '14px', right: '14px',
+            width: '30px', height: '30px', borderRadius: '50%',
+            background: '#f3f4f6', border: 'none', cursor: 'pointer',
+            fontSize: '14px', color: '#6b7280', fontWeight: 600,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
           ✕
         </button>
 
         {/* Headline */}
-        <h2 style={{
-          fontFamily: "'League Spartan', sans-serif",
-          fontSize: '24px',
-          fontWeight: 800,
-          color: '#111827',
-          lineHeight: 1.2,
-          marginBottom: '0.6rem',
-          paddingRight: '2rem',
+        <div style={{
+          fontFamily: "'League Spartan', sans-serif", fontSize: '26px',
+          fontWeight: 800, color: '#111827', lineHeight: 1.15,
+          marginBottom: '0.5rem', paddingRight: '2rem',
         }}>
-          The best worst dates start now.
-        </h2>
+          You&apos;re officially one of us.
+        </div>
 
         {/* Subtext */}
-        <p style={{
-          fontSize: '15px',
-          color: '#6b7280',
-          lineHeight: 1.6,
-          marginBottom: '1.25rem',
-        }}>
+        <p style={{ fontSize: '15px', color: '#6b7280', lineHeight: 1.6, marginBottom: '1.25rem' }}>
           Every week, fresh anonymous dating stories straight to your inbox — real, unfiltered, and occasionally unhinged.
         </p>
 
@@ -98,52 +76,69 @@ export default function SubscribeConfirmModal({
         <div style={{ borderTop: '1px solid #f3f4f6', margin: '1.25rem 0' }} />
 
         {/* What happens next */}
-        <p style={{
-          fontSize: '11px',
-          fontWeight: 600,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          color: '#9ca3af',
-          marginBottom: '0.75rem',
-        }}>
+        <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '0.75rem' }}>
           What happens next
         </p>
 
-        {/* Step 1 */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '0.85rem' }}>
-          <div style={{
-            width: '32px', height: '32px', borderRadius: '8px',
-            background: '#eff6ff', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', flexShrink: 0, fontSize: '15px',
-          }}>
-            📬
-          </div>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '15px' }}>📬</div>
           <div>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '2px' }}>
-              Check your inbox
-            </p>
-            <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.5 }}>
-              A welcome email is on its way with a sneak peek of what we&apos;re about.
-            </p>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '2px' }}>Check your inbox</p>
+            <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.5 }}>A welcome email is on its way with a sneak peek of what we&apos;re about.</p>
           </div>
         </div>
 
-        {/* Step 2 */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '1.5rem' }}>
-          <div style={{
-            width: '32px', height: '32px', borderRadius: '8px',
-            background: '#eff6ff', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', flexShrink: 0, fontSize: '15px',
-          }}>
-            📖
-          </div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '1.25rem' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '15px' }}>📖</div>
           <div>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '2px' }}>
-              Browse this week&apos;s stories
-            </p>
-            <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.5 }}>
-              Read what everyone else is too embarrassed to say out loud.
-            </p>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '2px' }}>Browse this week&apos;s stories</p>
+            <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.5 }}>Read what everyone else is too embarrassed to say out loud.</p>
+          </div>
+        </div>
+
+        {/* Story teaser */}
+        <div style={{ borderTop: '1px solid #f3f4f6', margin: '1.25rem 0 1rem' }} />
+        <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: '0.75rem' }}>
+          A taste of what&apos;s inside
+        </p>
+
+        <div
+          onClick={handleTeaserClick}
+          style={{
+            background: '#f9fafb', border: '1.5px solid #e5e7eb',
+            borderRadius: '14px', padding: '16px', marginBottom: '1.25rem',
+            cursor: 'pointer', transition: 'border-color 0.15s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.borderColor = '#2563EB')}
+          onMouseLeave={e => (e.currentTarget.style.borderColor = '#e5e7eb')}
+        >
+          {/* Theme badge */}
+          <span style={{
+            display: 'inline-block', fontSize: '11px', fontWeight: 700,
+            padding: '4px 12px', borderRadius: '100px', marginBottom: '10px',
+            textTransform: 'uppercase', letterSpacing: '0.04em',
+            background: TEASER_STORY.themeColor.bg, color: TEASER_STORY.themeColor.color,
+          }}>
+            {TEASER_STORY.theme}
+          </span>
+
+          <p style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '6px', lineHeight: 1.3 }}>
+            {TEASER_STORY.title}
+          </p>
+
+          <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: 1.55, marginBottom: '10px' }}>
+            {TEASER_STORY.text.length > 120 ? TEASER_STORY.text.slice(0, 120) + '...' : TEASER_STORY.text}
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {Object.entries(TEASER_STORY.reactions).map(([emoji, count]) => (
+                <span key={emoji} style={{ fontSize: '13px', color: '#9ca3af', fontWeight: 500 }}>
+                  {emoji} {count}
+                </span>
+              ))}
+            </div>
+            <span style={{ fontSize: '12px', color: '#2563EB', fontWeight: 600 }}>Read more →</span>
           </div>
         </div>
 
@@ -151,18 +146,11 @@ export default function SubscribeConfirmModal({
         <button
           onClick={handleCTA}
           style={{
-            display: 'block',
-            width: '100%',
-            background: '#2563EB',
-            color: '#ffffff',
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: '15px',
-            fontWeight: 600,
-            border: 'none',
-            borderRadius: '12px',
-            padding: '14px 20px',
-            cursor: 'pointer',
-            textAlign: 'center',
+            display: 'block', width: '100%', background: '#2563EB',
+            color: '#ffffff', fontFamily: "'DM Sans', sans-serif",
+            fontSize: '15px', fontWeight: 600, border: 'none',
+            borderRadius: '12px', padding: '14px 20px',
+            cursor: 'pointer', textAlign: 'center',
           }}
         >
           Read this week&apos;s stories →
