@@ -1,5 +1,7 @@
 "use client";
 import HowItWorksCarousel from "../components/HowItWorksCarousel";
+import InterstitialModal from "../components/InterstitialModal";
+import SubscribeConfirmModal from "../components/SubscribeConfirmModal";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 // ── Supabase Config ──
@@ -301,6 +303,7 @@ export default function DateAndTell() {
   const [heroSub, setHeroSub] = useState(false);
   const [ctaSub, setCtaSub] = useState(false);
   const [pageSub, setPageSub] = useState(false);
+  const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [storyText, setStoryText] = useState("");
   const [page, setPageState] = useState("home");
@@ -1455,6 +1458,14 @@ export default function DateAndTell() {
   return (
     <div style={{ fontFamily: "var(--font)", background: "white", minHeight: "100vh" }}>
       <style>{css}</style>
+
+      <InterstitialModal submitPath="/submit" />
+      {showSubscribeConfirm && (
+        <SubscribeConfirmModal
+          onClose={() => setShowSubscribeConfirm(false)}
+          storiesPath="/library"
+        />
+      )}
 
       {/* Nav */}
       <div className="nav-wrapper">
