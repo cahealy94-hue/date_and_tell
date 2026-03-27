@@ -24,21 +24,21 @@ export default function AdminPage() {
       body: JSON.stringify({ password }),
     });
     if (res.ok) {
+      const { token } = await res.json();
       setAuthed(true);
-      localStorage.setItem("admin_pass", password);
+      localStorage.setItem("admin_token", token);
+      setPassword("");
+      localStorage.removeItem("admin_pass");
     } else {
       alert("Wrong password");
     }
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem("admin_pass");
-    if (saved) {
-      setPassword(saved);
-      fetch("/api/admin/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: saved }),
+    const token = localStorage.getItem("admin_token");
+    if (token) {
+      fetch("/api/admin/stories?status=pending", {
+        headers: { "x-admin-token": token },
       }).then(res => { if (res.ok) setAuthed(true); });
     }
   }, []);
@@ -46,7 +46,7 @@ export default function AdminPage() {
   const fetchStories = async () => {
     setLoading(true);
     const res = await fetch(`/api/admin/stories?status=${filter}`, {
-      headers: { "x-admin-password": password },
+      headers: { "x-admin-token": localStorage.getItem("admin_token") },
     });
     if (res.ok) setStories(await res.json());
     setLoading(false);
@@ -59,7 +59,10 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/stories", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "x-admin-password": password },
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": localStorage.getItem("admin_token"),
+        },
         body: JSON.stringify({ id, status }),
       });
       const data = await res.json();
@@ -86,7 +89,10 @@ export default function AdminPage() {
     setActionLoading(id);
     await fetch("/api/admin/stories", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", "x-admin-password": password },
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-token": localStorage.getItem("admin_token"),
+      },
       body: JSON.stringify({ id, title: editTitle, rewritten_text: editText, author_persona: editPersona, theme: editTheme }),
     });
     setStories(prev => prev.map(s => s.id === id ? { ...s, title: editTitle, rewritten_text: editText, author_persona: editPersona, theme: editTheme } : s));
