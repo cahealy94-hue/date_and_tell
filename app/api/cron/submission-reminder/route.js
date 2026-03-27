@@ -109,7 +109,7 @@ export async function GET(request) {
 
   try {
     const res = await fetch(
-      `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/broadcasts`,
+      `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/posts`,
       {
         method: "POST",
         headers: {
@@ -117,12 +117,11 @@ export async function GET(request) {
           Authorization: `Bearer ${BEEHIIV_API_KEY}`,
         },
         body: JSON.stringify({
-          subject: variant.subject,
-          preview_text: variant.previewText,
-          content: { html: emailHtml },
-          send_at: null,
-          status: "draft",
-        }),
+  title: variant.subject,
+  subtitle: variant.previewText,
+  body_content: emailHtml,
+  status: "draft",
+}),
       }
     );
 
