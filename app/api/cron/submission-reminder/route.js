@@ -1,5 +1,8 @@
 const BEEHIIV_API_KEY = process.env.BEEHIIV_API_KEY;
 const BEEHIIV_PUBLICATION_ID = process.env.BEEHIIV_PUBLICATION_ID;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vopnqpulwbofvbyztcta.supabase.co";
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 const variants = [
   {
@@ -41,12 +44,8 @@ One weird moment is all it takes.`,
   },
 ];
 
-export async function GET(request) {
-  
-
-  const variant = variants[Math.floor(Math.random() * variants.length)];
-
-  const emailHtml = `
+function buildEmailHtml(variant) {
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -95,7 +94,7 @@ export async function GET(request) {
             <td style="background:#F8FAFC;padding:24px 40px;border-top:1px solid #E2E8F0;">
               <p style="font-size:12px;color:#94A3B8;margin:0;line-height:1.6;">
                 You're receiving this because you subscribed to Date&Tell.<br>
-                <a href="{{unsubscribe_url}}" style="color:#94A3B8;">Unsubscribe</a>
+                <a href="https://www.dateandtell.com" style="color:#94A3B8;">dateandtell.com</a>
               </p>
             </td>
           </tr>
@@ -106,33 +105,63 @@ export async function GET(request) {
   </table>
 </body>
 </html>`;
+}
 
+export async function GET(request) {
+  // ── Fetch active subscribers from Supabase ──
+  const subRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/subscribers?is_active=eq.true&select=email`,
+    {
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      },
+    }
+  );
+
+  if (!subRes.ok) {
+    console.error("Failed to fetch subscribers:", await subRes.text());
+    return Response.json({ ok: false, error: "Failed to fetch subscribers" }, { status: 500 });
+  }
+
+  const subscribers = await subRes.json();
+  const emails = subscribers.map(s => s.email).filter(Boolean);
+
+  if (emails.length === 0) {
+    return Response.json({ ok: false, error: "No active subscribers found" }, { status: 400 });
+  }
+
+  // ── Pick a random variant ──
+  const variant = variants[Math.floor(Math.random() * variants.length)];
+  const emailHtml = buildEmailHtml(variant);
+
+  // ── Send via Resend ──
   try {
-    const res = await fetch(
-      `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/posts`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${BEEHIIV_API_KEY}`,
-        },
-        body: JSON.stringify({
-  title: variant.subject,
-  subtitle: variant.previewText,
-  body_content: emailHtml,
-  status: "draft",
-}),
-      }
-    );
+    const res = await fetch("https://api.resend.com/emails/batch", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify(
+        emails.map(email => ({
+          from: "Date&Tell <hello@dateandtell.com>",
+          to: email,
+          subject: variant.subject,
+          html: emailHtml,
+        }))
+      ),
+    });
 
     const data = await res.json();
 
     if (!res.ok) {
-      console.error("Beehiiv broadcast error:", data);
+      console.error("Resend batch error:", data);
       return Response.json({ ok: false, error: data }, { status: 500 });
     }
 
-    return Response.json({ ok: true, broadcastId: data.data?.id });
+    console.log(`Sent submission reminder to ${emails.length} subscribers`);
+    return Response.json({ ok: true, sent: emails.length });
   } catch (err) {
     console.error("Cron job error:", err);
     return Response.json({ ok: false, error: err.message }, { status: 500 });
