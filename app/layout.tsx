@@ -1,3 +1,5 @@
+import AnnouncementBanner from "../components/AnnouncementBanner";
+
 export const metadata = {
   title: "Real Anonymous Dating Stories | Date&Tell",
   description: "Funny, cringey, sweet — real dating stories told anonymously. New stories every Friday.",
@@ -6,7 +8,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0 }}>{children}</body>
+      <body style={{ margin: 0 }}>
+        <AnnouncementBanner />
+        {children}
+      </body>
     </html>
   );
 }
