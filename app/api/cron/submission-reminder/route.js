@@ -125,7 +125,7 @@ export async function GET(request) {
           preview_text: variant.previewText,
           content: { html: emailHtml },
           send_at: null,
-          status: "confirmed",
+          status: "draft",
         }),
       }
     );
