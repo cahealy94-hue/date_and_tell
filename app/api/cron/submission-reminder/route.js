@@ -125,7 +125,7 @@ export async function GET(request) {
   }
 
   const subscribers = await subRes.json();
-  const emails = subscribers.map(s => s.email).filter(Boolean);
+  const emails = ["claire@dateandtell.com"];
 
   if (emails.length === 0) {
     return Response.json({ ok: false, error: "No active subscribers found" }, { status: 400 });
