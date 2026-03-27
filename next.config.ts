@@ -13,5 +13,26 @@ const nextConfig = {
       { source: '/privacy', destination: '/' },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: 'https://www.dateandtell.com',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PATCH, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, x-admin-token',
+          },
+        ],
+      },
+    ];
+  },
 };
 module.exports = nextConfig;
