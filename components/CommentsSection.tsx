@@ -72,19 +72,18 @@ function CommentCard({ comment, sessionId, onReactionChange }: {
   }
 
   return (
-    <div style={{ padding: '1rem 0', borderBottom: '1px solid #f3f4f6' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{comment.author_name}</span>
+    <div style={{ padding: '0.75rem 0', borderBottom: '1px solid #f3f4f6' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem' }}>
         <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{timeAgo(comment.created_at)}</span>
       </div>
-      <p style={{ fontSize: '0.9rem', color: '#374151', lineHeight: 1.6, margin: '0 0 0.6rem' }}>{comment.content}</p>
+      <p style={{ fontSize: '0.9rem', color: '#374151', lineHeight: 1.6, margin: '0 0 0.5rem' }}>{comment.content}</p>
       <div style={{ display: 'flex', gap: '0.4rem' }}>
         <button
           onClick={() => react('like')}
           disabled={reacting}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.3rem',
-            padding: '0.25rem 0.55rem', borderRadius: '999px',
+            padding: '0.2rem 0.5rem', borderRadius: '999px',
             border: comment.my_reaction === 'like' ? '1px solid #2563eb' : '1px solid #e5e7eb',
             background: comment.my_reaction === 'like' ? '#eff6ff' : 'white',
             color: comment.my_reaction === 'like' ? '#2563eb' : '#6b7280',
@@ -99,7 +98,7 @@ function CommentCard({ comment, sessionId, onReactionChange }: {
           disabled={reacting}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.3rem',
-            padding: '0.25rem 0.55rem', borderRadius: '999px',
+            padding: '0.2rem 0.5rem', borderRadius: '999px',
             border: comment.my_reaction === 'dislike' ? '1px solid #e11d48' : '1px solid #e5e7eb',
             background: comment.my_reaction === 'dislike' ? '#fff1f2' : 'white',
             color: comment.my_reaction === 'dislike' ? '#e11d48' : '#6b7280',
@@ -173,59 +172,54 @@ export default function CommentsSection({ storyId }: CommentsSectionProps) {
   }
 
   return (
-    <section style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid #e5e7eb' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-        <h3 style={{ fontFamily: 'inherit', fontSize: '1.1rem', fontWeight: 600, color: '#111827', margin: 0 }}>
-          💬 {loading ? 'Comments' : `${comments.length} Comment${comments.length !== 1 ? 's' : ''}`}
-        </h3>
-      </div>
+    <section style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e5e7eb' }}>
 
-      <div>
-        {loading ? (
-          <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>Loading…</p>
-        ) : comments.length === 0 ? (
-          <p style={{ color: '#9ca3af', fontSize: '0.9rem', fontStyle: 'italic' }}>No comments yet. Be the first to share your thoughts.</p>
-        ) : (
-          comments.map(c => (
+      {/* Comment list — only show if there are comments */}
+      {!loading && comments.length > 0 && (
+        <div style={{ marginBottom: '1rem' }}>
+          <h3 style={{ fontFamily: 'inherit', fontSize: '1rem', fontWeight: 600, color: '#111827', margin: '0 0 0.75rem' }}>
+            💬 {comments.length} Comment{comments.length !== 1 ? 's' : ''}
+          </h3>
+          {comments.map(c => (
             <CommentCard
               key={c.id}
               comment={c}
               sessionId={sessionIdRef.current}
               onReactionChange={handleReactionChange}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
-      <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      {/* Submit form */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
         {submitted ? (
-          <div style={{ padding: '0.85rem 1rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', color: '#15803d', fontSize: '0.9rem' }}>
+          <div style={{ padding: '0.75rem 1rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', color: '#15803d', fontSize: '0.875rem' }}>
             ✓ Comment posted!
           </div>
         ) : (
           <>
-            
             <textarea
               placeholder="Share your reaction or story…"
               value={content}
               onChange={e => setContent(e.target.value)}
-              rows={3}
-              maxLength={1000}
+              rows={2}
+              maxLength={500}
               style={{
                 width: '100%', padding: '0.65rem 0.85rem', border: '1px solid #d1d5db',
-                borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit',
-                color: '#111827', background: '#fafafa', boxSizing: 'border-box', resize: 'vertical',
+                borderRadius: '8px', fontSize: '0.875rem', fontFamily: 'inherit',
+                color: '#111827', background: '#fafafa', boxSizing: 'border-box', resize: 'none',
               }}
             />
-            {error && <p style={{ fontSize: '0.85rem', color: '#dc2626', margin: 0 }}>{error}</p>}
+            {error && <p style={{ fontSize: '0.8rem', color: '#dc2626', margin: 0 }}>{error}</p>}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{content.length}/1000</span>
+              <span style={{ fontSize: '0.72rem', color: '#9ca3af' }}>{content.length}/500</span>
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !content.trim()}
                 style={{
                   background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px',
-                  padding: '0.55rem 1.1rem', fontSize: '0.875rem', fontWeight: 600,
+                  padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600,
                   fontFamily: 'inherit', cursor: submitting || !content.trim() ? 'not-allowed' : 'pointer',
                   opacity: submitting || !content.trim() ? 0.5 : 1,
                 }}
