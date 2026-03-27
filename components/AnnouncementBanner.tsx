@@ -20,35 +20,97 @@ export default function AnnouncementBanner() {
   if (!visible) return null
 
   return (
-    <div style={{ background: "#111827", color: 'white', width: '100%', zIndex: 50 }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0.6rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+    <div style={{
+      background: '#EF4444',
+      color: 'white',
+      width: '100%',
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+    }}>
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0.55rem 1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '0.75rem',
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.6rem',
+          flex: 1,
+          minWidth: 0,
+          overflow: 'hidden',
+        }}>
           <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-            background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
-            borderRadius: '999px', padding: '0.15rem 0.6rem', fontSize: '0.7rem',
-            fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            background: 'rgba(255,255,255,0.2)',
+            border: '1px solid rgba(255,255,255,0.35)',
+            borderRadius: '999px',
+            padding: '0.15rem 0.55rem',
+            fontSize: '0.68rem',
+            fontWeight: 700,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}>
             💬 New
           </span>
-          <p style={{ margin: 0, fontSize: '0.875rem', color: 'rgba(255,255,255,0.95)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            <strong style={{ color: 'white', fontWeight: 700 }}>Comments are here.</strong>{' '}
-            React to stories and join the conversation.
+          <p style={{
+            margin: 0,
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            color: 'white',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}>
+            <strong style={{ fontWeight: 700 }}>Comments are here.</strong>{' '}
+            <span style={{ opacity: 0.9 }}>React to stories and join the conversation.</span>
           </p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
           <a
-            href="/stories"
-            style={{ color: 'white', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.5)', paddingBottom: '1px', whiteSpace: 'nowrap', flexShrink: 0 }}
+            href="/library"
+            onClick={(e) => {
+              e.preventDefault()
+              // Dispatch a custom event that page.jsx can listen to
+              window.dispatchEvent(new CustomEvent('navigate', { detail: 'library' }))
+            }}
+            style={{
+              color: 'white',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+              borderBottom: '1.5px solid rgba(255,255,255,0.6)',
+              paddingBottom: '1px',
+              whiteSpace: 'nowrap',
+            }}
           >
             Try it →
           </a>
+          <button
+            onClick={dismiss}
+            aria-label="Dismiss"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'rgba(255,255,255,0.8)',
+              cursor: 'pointer',
+              padding: '0.2rem',
+              fontSize: '1rem',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            ✕
+          </button>
         </div>
-        <button
-          onClick={dismiss}
-          aria-label="Dismiss"
-          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '0.25rem', borderRadius: '4px', fontSize: '1rem', lineHeight: 1 }}
-        >
-          ✕
-        </button>
       </div>
     </div>
   )
