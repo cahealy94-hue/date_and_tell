@@ -1,115 +1,125 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import Anthropic from '@anthropic-ai/sdk'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function supabaseHeaders() {
+  return {
+    "Content-Type": "application/json",
+    apikey: SUPABASE_SERVICE_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+  }
+}
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
-
-async function moderateComment(content: string): Promise<boolean> {
+async function moderateComment(content) {
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 10,
-      system: `You are a content moderator for a dating stories platform.
-Flag content as inappropriate if it contains: hate speech, explicit sexual content, personal attacks, spam, doxxing, or harassment.
-Respond with only "FLAG" or "OK".`,
-      messages: [{ role: 'user', content }],
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 10,
+        messages: [{
+          role: "user",
+          content: `You are a content moderator for a dating stories platform. Flag content as inappropriate if it contains hate speech, explicit sexual content, personal attacks, spam, doxxing, or harassment. Respond with only "FLAG" or "OK".\n\n${content}`
+        }],
+      }),
     })
-    const verdict = (response.content[0] as { type: 'text'; text: string }).text.trim()
-    return verdict === 'FLAG'
+    const data = await response.json()
+    const verdict = data.content?.[0]?.text?.trim()
+    return verdict === "FLAG"
   } catch (err) {
-    console.error('Moderation check failed:', err)
-    return false // fail open
+    console.error("Moderation check failed:", err)
+    return false
   }
 }
 
 // GET /api/comments?story_id=xxx&session_id=yyy
-export async function GET(request: NextRequest) {
+export async function GET(request) {
   const { searchParams } = new URL(request.url)
-  const storyId = searchParams.get('story_id')
-  const sessionId = searchParams.get('session_id') || ''
+  const storyId = searchParams.get("story_id")
+  const sessionId = searchParams.get("session_id") || ""
 
   if (!storyId) {
-    return NextResponse.json({ error: 'story_id is required' }, { status: 400 })
+    return Response.json({ error: "story_id is required" }, { status: 400 })
   }
 
-  // Fetch approved comments with reaction counts
-  const { data: comments, error } = await supabase
-    .from('comments')
-    .select(`
-      id, author_name, content, created_at,
-      comment_reactions (reaction, session_id)
-    `)
-    .eq('story_id', storyId)
-    .eq('is_approved', true)
-    .order('created_at', { ascending: true })
+  // Fetch approved comments
+  const commentsRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/comments?story_id=eq.${storyId}&is_approved=eq.true&select=id,author_name,content,created_at&order=created_at.asc`,
+    { headers: supabaseHeaders() }
+  )
+  const comments = await commentsRes.json()
 
-  if (error) {
-    console.error('Error fetching comments:', error)
-    return NextResponse.json({ error: 'Failed to fetch comments' }, { status: 500 })
+  if (!commentsRes.ok) {
+    return Response.json({ error: "Failed to fetch comments" }, { status: 500 })
   }
 
-  // Shape reaction data: counts + current session's vote
-  const shaped = (comments || []).map((c: any) => {
-    const reactions = c.comment_reactions || []
+  // Fetch reactions for these comments
+  const commentIds = comments.map(c => c.id)
+  let reactions = []
+  if (commentIds.length > 0) {
+    const reactRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/comment_reactions?comment_id=in.(${commentIds.join(",")})&select=comment_id,reaction,session_id`,
+      { headers: supabaseHeaders() }
+    )
+    reactions = await reactRes.json()
+  }
+
+  const shaped = comments.map(c => {
+    const r = reactions.filter(r => r.comment_id === c.id)
     return {
-      id: c.id,
-      author_name: c.author_name,
-      content: c.content,
-      created_at: c.created_at,
-      likes: reactions.filter((r: any) => r.reaction === 'like').length,
-      dislikes: reactions.filter((r: any) => r.reaction === 'dislike').length,
-      my_reaction: sessionId
-        ? (reactions.find((r: any) => r.session_id === sessionId)?.reaction ?? null)
-        : null,
+      ...c,
+      likes: r.filter(r => r.reaction === "like").length,
+      dislikes: r.filter(r => r.reaction === "dislike").length,
+      my_reaction: sessionId ? (r.find(r => r.session_id === sessionId)?.reaction ?? null) : null,
     }
   })
 
-  return NextResponse.json({ comments: shaped })
+  return Response.json({ comments: shaped })
 }
 
 // POST /api/comments
-export async function POST(request: NextRequest) {
-  const body = await request.json()
-  const { story_id, author_name, content } = body
+export async function POST(request) {
+  const { story_id, author_name, content } = await request.json()
 
   if (!story_id || !content) {
-    return NextResponse.json({ error: 'story_id and content are required' }, { status: 400 })
+    return Response.json({ error: "story_id and content are required" }, { status: 400 })
   }
-
   if (content.trim().length < 3) {
-    return NextResponse.json({ error: 'Comment is too short' }, { status: 400 })
+    return Response.json({ error: "Comment is too short" }, { status: 400 })
   }
-
   if (content.trim().length > 1000) {
-    return NextResponse.json({ error: 'Comment must be under 1000 characters' }, { status: 400 })
+    return Response.json({ error: "Comment must be under 1000 characters" }, { status: 400 })
   }
 
   const isFlagged = await moderateComment(content.trim())
 
-  const { data, error } = await supabase
-    .from('comments')
-    .insert({
+  const saveRes = await fetch(`${SUPABASE_URL}/rest/v1/comments`, {
+    method: "POST",
+    headers: { ...supabaseHeaders(), Prefer: "return=representation" },
+    body: JSON.stringify({
       story_id,
-      author_name: author_name?.trim() || 'Anonymous',
+      author_name: author_name?.trim() || "Anonymous",
       content: content.trim(),
       is_approved: true,
       is_flagged: isFlagged,
-    })
-    .select('id, author_name, content, created_at')
-    .single()
+    }),
+  })
 
-  if (error) {
-    console.error('Error inserting comment:', error)
-    return NextResponse.json({ error: 'Failed to submit comment' }, { status: 500 })
+  if (!saveRes.ok) {
+    console.error("Supabase error:", await saveRes.text())
+    return Response.json({ error: "Failed to submit comment" }, { status: 500 })
   }
 
-  return NextResponse.json(
-    { comment: { ...data, likes: 0, dislikes: 0, my_reaction: null }, message: 'Comment posted!' },
+  const saved = await saveRes.json()
+  const comment = Array.isArray(saved) ? saved[0] : saved
+
+  return Response.json(
+    { comment: { ...comment, likes: 0, dislikes: 0, my_reaction: null }, message: "Comment posted!" },
     { status: 201 }
   )
 }
