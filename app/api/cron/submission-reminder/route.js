@@ -42,10 +42,7 @@ One weird moment is all it takes.`,
 ];
 
 export async function GET(request) {
-  const authHeader = request.headers.get("x-cron-secret");
-if (authHeader !== process.env.CRON_SECRET) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  
 
   const variant = variants[Math.floor(Math.random() * variants.length)];
 
