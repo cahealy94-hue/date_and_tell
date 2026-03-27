@@ -1,4 +1,4 @@
-"use client";
+"use client"; import AdminCommentsPanel from "../../components/AdminCommentsPanel";
 import { useState, useEffect } from "react";
 
 const THEMES = ["First Dates", "Meet Cutes", "Dating App Disasters", "Awkward Moments", "Meeting the Family", "Situationships"];
@@ -101,6 +101,7 @@ export default function AdminPage() {
     { key: "reported", label: "Reported", desc: "Stories flagged by readers" },
     { key: "deleted", label: "Deleted", desc: "Removed stories" },
     { key: "rejected", label: "Rejected", desc: "Rejected submissions" },
+    { key: "comments", label: "Comments", desc: "Flagged comments for review" },
   ];
 
   const currentTab = tabs.find(t => t.key === filter) || tabs[0];
@@ -292,7 +293,11 @@ export default function AdminPage() {
             <div className="queue-count">{stories.length} / 6</div>
           </div>
         )}
-
+{filter === "comments" ? (
+  <AdminCommentsPanel />
+) :
+```
+And close it by adding a `)` after the final `)}` of the stories map block.
         {loading ? (
           <div className="empty"><p>Loading...</p></div>
         ) : stories.length === 0 ? (
